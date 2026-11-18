@@ -1,10 +1,13 @@
 {
   "name": "huangli-bazi",
-  "version": "3.1.0",
+  "version": "3.2.0",
   "private": true,
-  "description": "离线黄历 / 择日 / 生辰八字工具：单页 HTML，可自建规则书",
+  "description": "离线黄历 / 择日 / 生辰八字工具：单文件产物 + 可维护源码，可自建规则书",
   "scripts": {
-    "test": "node tests/run.js"
+    "build": "node tools/build.js",
+    "check": "node tools/build.js --check",
+    "test": "node tests/run.js",
+    "release": "node tools/build.js && node tests/run.js"
   },
   "engines": {
     "node": ">=18"

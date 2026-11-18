@@ -14,5 +14,7 @@ jobs:
         with:
           node-version: '20'
       # 没有任何第三方依赖，不需要 npm install
-      - name: 跑历法 / 规则 / 渲染 / 工程约束四组断言
+      - name: 校验 index.html 与 src/ 是否同步
+        run: node tools/build.js --check
+      - name: 跑历法 / 规则 / 渲染 / 工程约束 / 构建同步五组断言
         run: node tests/run.js

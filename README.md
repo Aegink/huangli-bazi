@@ -23,15 +23,20 @@
 
 1. 打开 `index.html`（Chrome / Edge）。
 2. `assets/lunar.js` 必须与 `index.html` 同目录，它是历法计算库 lunar-javascript 1.7.8 的本地副本。
-3. 详见 [交接文档](交接文档.md)。
+3. 想改代码：改 `src/` 里的文件，然后 `node tools/build.js` 重新生成 `index.html`。
+4. 详见 [交接文档](交接文档.md)。
 
 ## 开发与测试
 
+源码在 `src/`（`template.html` + `style.css` + 15 个按职责拆分的 js），`index.html` 是拼出来的产物，**不要直接改**。
+
 ```bash
-node tests/run.js      # 或 npm test
+node tools/build.js        # src/ → index.html（约 10 毫秒）
+node tests/run.js          # 或 npm test，66 项断言
+node tools/build.js --check  # 只校验产物是否与源码同步（CI 用）
 ```
 
-不需要安装任何依赖，Node 18+ 即可。测试会把 `index.html` 里的内联脚本抽出来，在带 DOM 桩、冻结时钟（2026-11-18）的沙箱里执行，然后断言四组：
+不需要安装任何依赖，Node 18+ 即可。测试按构建顺序拼接 `src/` 后，在带 DOM 桩、冻结时钟（2026-11-18）的沙箱里执行，断言五组：
 
 | 组 | 验什么 |
 | --- | --- |
@@ -39,10 +44,11 @@ node tests/run.js      # 或 npm test
 | B 规则引擎 | 条件解析与非法输入拦截、CSV / JSON 导入、重复导入去重、一票否决、节气前一日精确命中、事项隔离、分数上限、导入快照与撤销 |
 | C 界面渲染 | 四视图冒烟（无 `undefined` / `NaN`）、十二时辰表行数、流年干支与十神、主题切换 |
 | D 工程约束 | viewport、无外链脚本、除字体外无外部依赖、打印样式、暗色变量组 |
+| E 构建同步 | `index.html` 与 `src/` 逐字节一致（调用 `build.js --check`）、产物内联历法库、不含 `src/` 引用 |
 
-CI 在每次 push 与 PR 自动跑同一套断言（`.github/workflows/test.yml`）。视觉与排版仍需人工截图验收。
+CI 在每次 push 与 PR 先校验构建同步、再跑断言（`.github/workflows/test.yml`）。视觉与排版仍需人工截图验收。
 
-**为什么仍是单文件**：拆成 `src/*.js` 就得引入构建步骤，会破坏"双击即用、断网可用"。所以逻辑不拆，改用测试 + CI + 明确函数边界来提升可接手性——细节见交接文档第十三节。
+**为什么源码拆开、产物仍是单文件**：拆开是为了改得动（改择日只开 `view-pick.js`）；产物保持单文件是为了用得动（双击、断网、手机、U 盘都照旧）。构建只做一件事——把 CSS 与 JS 内联进模板，不引入任何打包器或依赖。细节见交接文档第十一节。
 
 ## 边界
 

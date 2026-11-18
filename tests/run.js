@@ -1,19 +1,23 @@
 /*
  * 自动化测试入口：node tests/run.js
  *
- * 做法：把 index.html 里的内联脚本抽出来，在一个受控沙箱里执行（DOM/localStorage 都是桩，时钟冻结在 2026-11-18），
- * 然后对"历法与天文 / 规则引擎 / 界面渲染 / 工程约束"四组断言。
+ * 做法：把 src/ 里 15 个源码文件按构建顺序拼起来，在一个受控沙箱里执行（DOM/localStorage 都是桩，
+ * 时钟冻结在 2026-11-18），然后对"历法与天文 / 规则引擎 / 界面渲染 / 工程约束 / 构建同步"五组断言。
  *
  * 为什么不用真实浏览器：这套测试要在 CI 上几秒钟跑完，且不依赖网络、不依赖字体与像素。
  * 视觉正确性仍靠人工截图验收（见交接文档第十节）。
+ * 为什么测 src/ 而不是 index.html：index.html 是产物，测源码才能定位到具体文件；产物一致性由 E 组守。
  */
 
 const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
+const { execFileSync } = require('child_process');
 const { createEnv } = require('./dom-stub');
+const { JS_FILES } = require('../tools/manifest');
 
 const ROOT = path.join(__dirname, '..');
+const SRC = path.join(ROOT, 'src');
 const HTML_PATH = path.join(ROOT, 'index.html');
 const LUNAR_PATH = path.join(ROOT, 'assets', 'lunar.js');
 const NOW = '2026-11-18T10:00:00+08:00';
@@ -38,13 +42,13 @@ function group(title, fn) {
 }
 
 /* ---------- 装载被测脚本 ---------- */
-if (!fs.existsSync(HTML_PATH)) { console.error('找不到 index.html'); process.exit(1); }
 if (!fs.existsSync(LUNAR_PATH)) { console.error('找不到 assets/lunar.js（离线库必须与 index.html 同目录）'); process.exit(1); }
+const missing = JS_FILES.filter(f => !fs.existsSync(path.join(SRC, f)));
+if (missing.length) { console.error('src/ 缺少源文件：' + missing.join(', ')); process.exit(1); }
 
-const html = fs.readFileSync(HTML_PATH, 'utf8');
-const blocks = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(m => m[1]);
-if (!blocks.length) { console.error('index.html 里没有内联 <script>'); process.exit(1); }
-const code = blocks.reduce((a, b) => (a.length > b.length ? a : b));
+const code = JS_FILES.map(f => fs.readFileSync(path.join(SRC, f), 'utf8')).join('\n\n');
+const template = fs.readFileSync(path.join(SRC, 'template.html'), 'utf8');
+const style = fs.readFileSync(path.join(SRC, 'style.css'), 'utf8');
 
 const lunar = require(LUNAR_PATH);
 const env = createEnv(NOW);
@@ -271,17 +275,36 @@ group('C. 界面渲染（四视图冒烟）', () => {
 
 /* ---------- D. 工程约束 ---------- */
 group('D. 工程约束（防止以后改坏底线）', () => {
-  ok('D1 有 viewport meta', /<meta name="viewport" content="[^"]*width=device-width/.test(html));
-  ok('D1 未禁用缩放', !/maximum-scale|user-scalable=no/.test(html));
+  const html = fs.readFileSync(HTML_PATH, 'utf8');
+  ok('D1 有 viewport meta', /<meta name="viewport" content="[^"]*width=device-width/.test(template));
+  ok('D1 未禁用缩放', !/maximum-scale|user-scalable=no/.test(template));
   // 除字体样式表外，不允许出现任何外链脚本/样式；字体断网会回落到系统字体，功能不受影响
-  const externals = [...html.matchAll(/<(script|link)[^>]*(?:src|href)="(http[^"]*)"/g)].map(m => m[2]);
-  ok('D2 无外链脚本', !/<script[^>]+src="http/.test(html));
+  const externals = [...template.matchAll(/<(script|link)[^>]*(?:src|href)="(http[^"]*)"/g)].map(m => m[2]);
+  ok('D2 无外链脚本', !/<script[^>]+src="http/.test(template));
   ok('D2 外链只允许字体样式表', externals.every(u => /fonts\/css2/.test(u)), externals.join(' | '));
-  ok('D2 字体带 display=swap 与系统回退', /fonts\/css2\?[\s\S]*display=swap/.test(html) && /--serif:[^;]*serif/.test(html));
-  ok('D3 内联脚本 <script> 只有一处主块', blocks.length >= 1);
-  ok('D4 有打印样式', /@media print/.test(html));
-  ok('D5 有暗色变量组', /html\[data-theme="dark"\]\{/.test(html));
-  ok('D6 不依赖 CDN 字体以外的网络', !/fastly\.jsdelivr|cdnjs|unpkg/.test(html));
+  ok('D2 字体带 display=swap 与系统回退', /fonts\/css2\?[\s\S]*display=swap/.test(template) && /--serif:[^;]*serif/.test(style));
+  ok('D3 内联脚本不残留占位符', !/@@SCRIPT@@|@@STYLE@@/.test(html));
+  ok('D4 有打印样式', /@media print/.test(style));
+  ok('D5 有暗色变量组', /html\[data-theme="dark"\]\{/.test(style));
+  ok('D6 不依赖 CDN 库', !/fastly\.jsdelivr|cdnjs|unpkg/.test(html));
+  ok('D7 源码里没有 localStorage 明文泄露提示', !/localStorage\.clear\(\)/.test(code));
+});
+
+/* ---------- E. 构建产物与源码同步 ---------- */
+group('E. 构建产物与源码同步', () => {
+  // index.html 是产物：必须由 src/ 拼出来，且与源码逐字节一致
+  let checkOk = true, msg = '';
+  try {
+    execFileSync(process.execPath, [path.join(ROOT, 'tools', 'build.js'), '--check'], { stdio: 'pipe' });
+  } catch (e) {
+    checkOk = false;
+    msg = String(e.stdout || '').trim() + String(e.stderr || '').trim();
+  }
+  ok('E1 index.html 与 src/ 同步', checkOk, msg);
+  const html = fs.readFileSync(HTML_PATH, 'utf8');
+  ok('E2 产物内联了历法库引用', /<script src="assets\/lunar\.js"><\/script>/.test(html));
+  ok('E3 产物是单个自包含文件（无 src= 指向 src/）', !/src="src\//.test(html));
+  ok('E4 产物不含 @file 头以外的空段落标记', html.length > 60000, 'len=' + html.length);
 });
 
 /* ---------- 汇总 ---------- */

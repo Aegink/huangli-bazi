@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>我的黄历与八字</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23F1EEE4'/%3E%3Crect x='6' y='9' width='20' height='2' fill='%231A1916'/%3E%3Crect x='6' y='14' width='9' height='2' fill='%231A1916'/%3E%3Crect x='17' y='14' width='9' height='2' fill='%23A6321C'/%3E%3Crect x='6' y='19' width='20' height='2' fill='%231A1916'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="https://miaoda.feishu.cn/fonts/css2?family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@300;400;500&display=swap">
+<style>
+@@STYLE@@
+</style>
+</head>
+<body>
+
+<div class="top no-print">
+  <div class="wrap">
+    <div class="brand">我的黄历与八字<small>离线可用 · 自己算，看得懂</small></div>
+    <div class="tabs">
+      <button class="tab on" data-view="pick">择日</button>
+      <button class="tab" data-view="chart">八字</button>
+      <button class="tab" data-view="today">今天</button>
+      <button class="tab" data-view="kb">规则书</button>
+      <button class="themeBtn" id="themeBtn">跟随系统</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 视图：择日 ===== -->
+<div class="view on" id="view-pick">
+  <div class="wrap">
+    <div class="sect">
+      <h2>挑个好日子</h2>
+      <p class="hint">选要办的事和范围，工具会逐日核对：黄历宜忌、建除、值日神、冲煞、彭祖百忌，再加上你在「规则书」里录入的地方规矩，全部摊开给你看。</p>
+    </div>
+
+    <div class="row" style="margin-bottom:8px;">
+      <div class="field">
+        <label>要办什么事</label>
+        <select id="event"></select>
+      </div>
+      <div class="field">
+        <label>从哪天开始</label>
+        <input type="date" id="fromDate">
+      </div>
+      <div class="field">
+        <label>往后看多少天</label>
+        <select id="span">
+          <option value="30">30 天</option>
+          <option value="60" selected>60 天</option>
+          <option value="90">90 天</option>
+          <option value="180">180 天</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>我的生肖（可不填）</label>
+        <select id="zodiac"></select>
+      </div>
+      <button class="go" id="runPick">开始挑</button>
+    </div>
+    <p class="hint sm" id="evNote"></p>
+
+    <div class="toolbar no-print" id="pickTools" style="display:none">
+      <span class="hint sm" id="pickSummary"></span>
+      <span class="sp"></span>
+      <button class="mini" id="pickCopy">复制结论</button>
+      <button class="mini" id="pickExport">导出 CSV</button>
+      <button class="mini" id="pickPrint">打印这一页</button>
+    </div>
+
+    <div class="divider"></div>
+    <div id="pickResult"></div>
+  </div>
+</div>
+
+<!-- ===== 视图：八字 ===== -->
+<div class="view" id="view-chart">
+  <div class="wrap">
+    <div class="sect">
+      <h2>我的生辰八字</h2>
+      <p class="hint">填出生时间（越准越好，时辰错了时柱就变了）。出生地只影响「真太阳时」校正，不确定就选默认。</p>
+    </div>
+
+    <div class="toolbar">
+      <input id="profName" placeholder="给这个档案起个名：我 / 妈 / 孩子" style="min-width:200px">
+      <button class="mini" id="profSave">存为档案</button>
+      <span class="sp"></span>
+      <div class="chipbar" id="profChips"></div>
+    </div>
+
+    <div class="row" style="margin-bottom:10px;">
+      <div class="field">
+        <label>出生日期（公历）</label>
+        <input type="date" id="birthDate">
+      </div>
+      <div class="field">
+        <label>出生时间</label>
+        <input type="time" id="birthTime" value="08:00">
+      </div>
+      <div class="field">
+        <label>性别（影响大运方向）</label>
+        <select id="gender">
+          <option value="1">男</option>
+          <option value="0">女</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>出生城市</label>
+        <select id="city"></select>
+      </div>
+      <button class="go" id="runChart">排盘</button>
+    </div>
+    <p class="hint sm">不知道时辰可以选 12:00 先看年月日三柱，时柱会不准，但前三柱仍然成立。</p>
+
+    <div class="divider"></div>
+    <div id="chartResult"></div>
+  </div>
+</div>
+
+<!-- ===== 视图：今天 ===== -->
+<div class="view" id="view-today">
+  <div class="wrap">
+    <div class="sect">
+      <h2>今天</h2>
+      <p class="hint">当天的干支、节气、宜忌与冲煞，再加上你录入的规矩在今天命中了哪些。</p>
+    </div>
+    <div id="todayResult"></div>
+  </div>
+</div>
+
+<!-- ===== 视图：规则书 ===== -->
+<div class="view" id="view-kb">
+  <div class="wrap">
+    <div class="sect">
+      <h2>规则书</h2>
+      <p class="hint">内置部分由开源农历库按通书规则计算，只读、带出处。你按自己的书录入的规则会叠在它上面，可以逐条启用或停用，也能随时导出来备份。</p>
+    </div>
+
+    <div class="stats" id="kbStats"></div>
+
+    <div class="toolbar no-print">
+      <button class="mini" id="kbNew">新增规则</button>
+      <button class="mini" id="kbImport">导入文件</button>
+      <button class="mini" id="kbExportJson">导出 JSON</button>
+      <button class="mini" id="kbExportCsv">导出 CSV</button>
+      <button class="mini" id="kbTpl">下载 CSV 模板</button>
+      <button class="mini" id="kbRollback" disabled>回滚上次导入</button>
+    </div>
+
+    <div class="toolbar no-print">
+      <input id="kbSearch" placeholder="搜索标题 / 出处 / 说明 / 事项" style="min-width:240px">
+      <select id="kbFilter">
+        <option value="">全部类别</option>
+        <option value="禁忌">禁忌</option>
+        <option value="宜日">宜日</option>
+        <option value="民俗">民俗</option>
+        <option value="门派对法">门派对法</option>
+        <option value="其他">其他</option>
+      </select>
+      <select id="kbOnOff">
+        <option value="">启用状态不限</option>
+        <option value="1">仅看已启用</option>
+        <option value="0">仅看已停用</option>
+      </select>
+      <span class="sp"></span>
+      <span class="hint sm" id="kbCount"></span>
+    </div>
+
+    <input type="file" id="kbFile" accept=".json,.csv,.txt" style="display:none">
+    <div id="kbImportBox"></div>
+    <div id="kbEditor"></div>
+    <div id="kbList"></div>
+    <div class="pager no-print" id="kbPager"></div>
+
+    <div class="divider"></div>
+    <h2 style="font-size:16px">规则自测</h2>
+    <p class="hint sm" style="margin-bottom:10px">录完规矩先在这里试一天：看它会不会命中、扣多少分、总共多少分。核对无误再去择日页面。</p>
+    <div class="toolbar no-print">
+      <input type="date" id="stDate">
+      <select id="stEvent"></select>
+      <select id="stZodiac"></select>
+      <button class="mini" id="stRun">测这一天</button>
+    </div>
+    <div id="stOut"></div>
+
+    <div class="divider"></div>
+    <h2 style="font-size:16px">内置规则（只读）</h2>
+    <p class="hint sm" style="margin-bottom:10px">这些由农历库按传统历法算出，不能改。想改变对某件事的判断，用上面的自定义规则去加减分或一票否决。</p>
+    <div id="kbBuiltin"></div>
+
+    <div class="divider"></div>
+    <h2 style="font-size:16px">自定义事项</h2>
+    <p class="hint sm" style="margin-bottom:10px">黄历里没有的地方习俗（上梁、谢土、开光、过礼等），在这里加一项，填它在黄历里对应的词，「择日」的下拉里就能选到。</p>
+    <div id="evList"></div>
+    <div class="toolbar no-print"><button class="mini" id="evNew">新增事项</button></div>
+    <div id="evEditor"></div>
+
+    <div class="divider"></div>
+    <h2 style="font-size:16px">打分权重</h2>
+    <p class="hint sm" style="margin-bottom:10px">内置各项占多少分。改完立刻对「择日」生效，恢复默认可一键还原。</p>
+    <div id="wPanel"></div>
+  </div>
+</div>
+
+<footer>
+  <div class="wrap">
+    本工具用开源农历库按传统历法规则计算，结果用于文化学习与生活参考，不构成对未来的判断，也不作为医疗、投资、婚姻等重大决定的依据。<br>
+    择日分数是把当天的黄历条目与你录入的规矩做机械匹配得到的初筛排序，不是真正的择日术——传统择日还要看神煞、方位与主事人的八字配合。规则书里的自定义条目由你自己录入并标注出处，工具不替你判断对错。
+  </div>
+</footer>
+
+<script src="assets/lunar.js"></script>
+<script>
+@@SCRIPT@@
+</script>
+
+</body>
+</html>
+

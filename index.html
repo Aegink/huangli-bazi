@@ -591,6 +591,8 @@ footer .wrap{font-size:11.5px;color:var(--faint);line-height:1.85;}
 
 <script src="assets/lunar.js"></script>
 <script>
+/* @file data-tables.js — 基础表：五行 / 十神释义 / 建除 / 十二神 / 二十八宿 / 节气名 / 内置事项与城市 */
+
 /* ================= 基础表 ================= */
 const GAN_WX = {甲:'木',乙:'木',丙:'火',丁:'火',戊:'土',己:'土',庚:'金',辛:'金',壬:'水',癸:'水'};
 const ZHI_WX = {子:'水',丑:'土',寅:'木',卯:'木',辰:'土',巳:'火',午:'火',未:'土',申:'金',酉:'金',戌:'土',亥:'水'};
@@ -672,6 +674,8 @@ const CITIES = [
 ];
 const ZODIACS = ['鼠','牛','虎','兔','龙','蛇','马','羊','猴','鸡','狗','猪'];
 
+/* @file lib-utils.js — 工具函数与主题：转义、日期、均时差、真太阳时、下载、明暗主题 */
+
 /* ================= 工具函数 ================= */
 const pad = n => (n<10?'0':'')+n;
 const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
@@ -740,6 +744,8 @@ function cycleTheme(){
   const next = (cur==='auto') ? 'dark' : (cur==='dark' ? 'light' : 'auto');
   applyTheme(next);
 }
+
+/* @file lib-bazi.js — 八字与黄历部件：十神换算、流年、时辰吉凶表、方位 */
 
 /* ================= 十神换算（日主 vs 流年干） ================= */
 const GAN_LIST = '甲乙丙丁戊己庚辛壬癸';
@@ -822,6 +828,8 @@ function posRow(lunar){
     + '</div>';
 }
 
+/* @file kb-store.js — 规则书存储：localStorage 读写、默认权重 */
+
 /* ================= 知识库 ================= */
 const KB_KEY = 'mybazi.kb.v2';
 const DEF_SET = {base:48, yi:9, ji:14, chong:12, useZx:true, useTs:true, useXiu:true};
@@ -857,6 +865,9 @@ function saveKB(){
 }
 
 /* --- 规则类型与条件解析 --- */
+
+/* @file kb-parse.js — 条件解析与索引：9 种条件写法、规则键、当日命中键 */
+
 const KINDS = [
   {k:'lun', label:'农历月日', hint:'3-3 = 农历三月初三；3-* = 三月的每一天；*-15 = 每月十五'},
   {k:'sol', label:'公历月日', hint:'1-1 = 一月一日；12-25 = 十二月二十五'},
@@ -1010,6 +1021,8 @@ function ruleApplies(r, ev){
   return r.scope.indexOf(ev.id)>=0 || r.scope.indexOf(ev.k)>=0;
 }
 
+/* @file kb-score.js — 择日评分：evalDay，把当日黄历与规则合成分数与依据 */
+
 /* ================= 择日评分 ================= */
 function evalDay(solar, ev, zodiac){
   const lunar = solar.getLunar();
@@ -1112,6 +1125,8 @@ function evalDay(solar, ev, zodiac){
   };
 }
 
+/* @file kb-profile.js — 多人档案与事项查找 */
+
 /* ================= 档案 ================= */
 const PROF_KEY = 'mybazi.profiles.v2';
 let PROFILES = [];
@@ -1134,6 +1149,8 @@ function eventById(id){
   for(let i=0;i<l.length;i++) if(l[i].id===id) return l[i];
   return null;
 }
+
+/* @file ui-shell.js — 页面外壳：下拉初始化、事项说明、视图切换 */
 
 /* ================= 初始化 ================= */
 function initSelects(){
@@ -1224,6 +1241,8 @@ document.querySelectorAll('.tab').forEach(btn=>{
     window.scrollTo({top:0,behavior:'smooth'});
   });
 });
+
+/* @file view-pick.js — 择日视图：批量排分、依据展开、导出 CSV */
 
 /* ================= 择日 ================= */
 let LAST_ROWS = [];
@@ -1379,6 +1398,8 @@ function pickToCsv(){
   downloadText('择日-'+(ev.k||ev.name||'结果')+'-'+new Date().toISOString().slice(0,10)+'.csv',
     '\ufeff'+lines.join('\r\n'), 'text/csv');
 }
+
+/* @file view-chart.js — 八字视图：四柱、大运、流年、档案切换 */
 
 /* ================= 八字 ================= */
 function renderChart(){
@@ -1579,6 +1600,8 @@ function saveCurrentProfile(){
   renderChips();
 }
 
+/* @file view-today.js — 今天视图：当日黄历全息 + 命中规则 */
+
 /* ================= 今天 ================= */
 function todayRuleHits(solar){
   const lunar = solar.getLunar();
@@ -1669,6 +1692,8 @@ function renderToday(){
     +   '</dl>'
     + '</div>';
 }
+
+/* @file view-kb.js — 规则书视图：列表、筛选、规则编辑器、事项编辑器 */
 
 /* ================= 规则书 ================= */
 function kbMsg(type, html){
@@ -1977,6 +2002,8 @@ function openEvEditor(id){
   });
 }
 
+/* @file kb-import.js — 导入导出：CSV/JSON 解析校验、导入、快照撤销 */
+
 /* --- 导入导出 --- */
 const CSV_HEAD = ['kind','title','match','scope','score','ban','note','source','on'];
 const CSV_HEAD_CN = {'类型':'kind','标题':'title','条件':'match','事项':'scope','加减分':'score','分值':'score','否决':'ban','说明':'note','出处':'source','启用':'on'};
@@ -2138,6 +2165,9 @@ function rollbackSnapshot(){
   kbMsg('ok', '已恢复到上一次导入之前的规则书。');
 }
 
+/* @file kb-tools.js — 规则自测、复制结论、导出 CSV、CSV 模板 */
+
+
 /* ================= 规则自测 ================= */
 function runSelfTest(){
   const out = document.getElementById('stOut');
@@ -2237,6 +2267,8 @@ const CSV_TPL = [
   'gz,示例：甲子日忌动土,甲子,装修 / 动工,-10,0,,某书 p.88,1'
 ].join('\r\n');
 
+/* @file boot.js — 启动：加载规则书、绑定事件、首屏渲染 */
+
 /* ================= 启动 ================= */
 (function boot(){
   if(typeof Solar === 'undefined'){
@@ -2314,3 +2346,4 @@ const CSV_TPL = [
 
 </body>
 </html>
+
