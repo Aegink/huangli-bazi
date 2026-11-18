@@ -1,0 +1,2313 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>我的黄历与八字</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23F1EEE4'/%3E%3Crect x='6' y='9' width='20' height='2' fill='%231A1916'/%3E%3Crect x='6' y='14' width='9' height='2' fill='%231A1916'/%3E%3Crect x='17' y='14' width='9' height='2' fill='%23A6321C'/%3E%3Crect x='6' y='19' width='20' height='2' fill='%231A1916'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="https://miaoda.feishu.cn/fonts/css2?family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@300;400;500&display=swap">
+<style>
+:root{
+  --paper:#F1EEE4; --card:#FAF8F0; --card-2:#F6F3E9;
+  --ink:#1A1916; --ink-2:#3D3A32; --muted:#7A756A; --faint:#A29C8E;
+  --red:#A6321C; --red-soft:rgba(166,50,28,.08);
+  --indigo:#2F5257; --gold:#8A6B2E;
+  --line:#DCD6C6; --line-strong:#C9C1AC;
+  --serif:"Noto Serif SC","Songti SC",Georgia,serif;
+  --sans:"Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+  --hero-bg:#1A1916; --hero-fg:#F1EEE4; --hero-sub:#C4BEAF; --hero-k:#9C9688;
+  color-scheme:light;
+}
+html[data-theme="dark"]{
+  --paper:#14130F; --card:#1C1A14; --card-2:#22201A;
+  --ink:#EDE7D8; --ink-2:#CEC7B6; --muted:#9B9384; --faint:#736C60;
+  --red:#E0714C; --red-soft:rgba(224,113,76,.14);
+  --indigo:#8BB2B6; --gold:#C9AA68;
+  --line:#302D26; --line-strong:#443F36;
+  --hero-bg:#0C0B08; --hero-fg:#EDE7D8; --hero-sub:#A39C8C; --hero-k:#7E7768;
+  color-scheme:dark;
+}
+*{box-sizing:border-box;}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:var(--sans);font-weight:300;font-size:15px;line-height:1.8;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:980px;margin:0 auto;padding:0 28px;}
+
+/* 顶栏 */
+.top{border-bottom:2px solid var(--ink);background:var(--paper);}
+.top .wrap{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;padding-top:26px;padding-bottom:14px;}
+.brand{font-family:var(--serif);font-size:22px;font-weight:600;letter-spacing:.04em;line-height:1.2;}
+.brand small{display:block;font-family:var(--sans);font-size:11.5px;font-weight:300;color:var(--faint);letter-spacing:.18em;margin-top:5px;}
+.tabs{display:flex;gap:2px;}
+.tab{
+  font-family:var(--serif);font-size:14px;padding:8px 15px;cursor:pointer;
+  background:none;border:1px solid var(--line-strong);border-bottom:none;color:var(--ink-2);
+  border-radius:2px 2px 0 0;position:relative;top:1px;transition:.15s;
+}
+.tab:hover{background:var(--card-2);}
+.tab.on{background:var(--ink);color:var(--paper);border-color:var(--ink);}
+
+.view{display:none;padding:34px 0 64px;}
+.view.on{display:block;}
+
+/* 通用 */
+h2{font-family:var(--serif);font-size:20px;font-weight:600;margin:0 0 4px;}
+h3{font-family:var(--serif);font-size:15px;font-weight:600;margin:0 0 6px;letter-spacing:.04em;}
+.hint{font-size:12.5px;color:var(--muted);line-height:1.75;}
+.hint.sm{font-size:11.5px;color:var(--faint);}
+.sect{margin-bottom:34px;}
+.row{display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end;}
+.field{display:flex;flex-direction:column;gap:6px;}
+.field > label{font-size:12px;color:var(--muted);letter-spacing:.04em;}
+input,select,textarea{
+  font-family:var(--sans);font-size:14px;color:var(--ink);
+  background:var(--card);border:1px solid var(--line-strong);border-radius:2px;
+  padding:8px 10px;outline:none;transition:.15s;
+}
+input:focus,select:focus,textarea:focus{border-color:var(--ink);background:var(--card-2);}
+input[type=date],input[type=time]{min-width:150px;}
+select option{background:var(--card-2);color:var(--ink);}
+select option:checked{background:var(--ink);color:var(--paper);}
+html[data-theme="dark"] input,
+html[data-theme="dark"] select,
+html[data-theme="dark"] textarea{
+  background-color:#1C1A14;color:#EDE7D8;border-color:#443F36;
+}
+html[data-theme="dark"] input:focus,
+html[data-theme="dark"] select:focus,
+html[data-theme="dark"] textarea:focus{background-color:#23201A;border-color:#7A7364;}
+html[data-theme="dark"] select option{background-color:#22201A;color:#EDE7D8;}
+html[data-theme="dark"] select option:checked{background-color:#3A362C;color:#EDE7D8;}
+html[data-theme="dark"] input::placeholder,
+html[data-theme="dark"] textarea::placeholder{color:#7E7768;}
+html[data-theme="dark"] input[type=date]::-webkit-calendar-picker-indicator,
+html[data-theme="dark"] input[type=time]::-webkit-calendar-picker-indicator{filter:invert(.82);}
+html[data-theme="dark"] ::-webkit-scrollbar{width:11px;height:11px;}
+html[data-theme="dark"] ::-webkit-scrollbar-track{background:#131210;}
+html[data-theme="dark"] ::-webkit-scrollbar-thumb{background:#3B372E;border:2px solid #131210;border-radius:6px;}
+html[data-theme="dark"] ::-webkit-scrollbar-thumb:hover{background:#514B40;}
+button.go{
+  font-family:var(--serif);font-size:15px;letter-spacing:.06em;
+  background:var(--ink);color:var(--paper);border:1px solid var(--ink);
+  padding:9px 30px;border-radius:2px;cursor:pointer;transition:.15s;
+}
+button.go:hover{background:var(--red);border-color:var(--red);}
+button.ghost{
+  font-family:var(--sans);font-size:13px;background:none;color:var(--ink-2);
+  border:1px solid var(--line-strong);padding:7px 14px;border-radius:2px;cursor:pointer;
+}
+button.ghost:hover{border-color:var(--ink);}
+button.ghost.on{background:var(--ink);color:var(--paper);border-color:var(--ink);}
+button.mini{
+  font-family:var(--sans);font-size:12px;background:none;color:var(--ink-2);
+  border:1px solid var(--line-strong);padding:4px 10px;border-radius:2px;cursor:pointer;transition:.15s;
+}
+button.mini:hover{border-color:var(--ink);color:var(--ink);}
+button.mini.on{background:var(--ink);color:var(--paper);border-color:var(--ink);}
+button.mini.warn{color:var(--red);border-color:rgba(166,50,28,.35);}
+button.mini.warn:hover{background:var(--red-soft);}
+button:disabled{opacity:.45;cursor:default;}
+
+.divider{border-top:1px solid var(--line);margin:30px 0 24px;}
+.toolbar{display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin:16px 0 10px;}
+.toolbar .sp{flex:1 1 auto;min-width:8px;}
+.toolbar input,.toolbar select{font-size:12.5px;padding:6px 9px;}
+
+/* 择日：推荐卡 */
+.best{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:26px;}
+.bestCard{
+  background:var(--card);border:1px solid var(--line-strong);border-top:3px solid var(--red);
+  padding:18px 16px 16px;position:relative;
+}
+.bestCard.ban{border-top-color:var(--faint);}
+.bestCard .rank{position:absolute;top:14px;right:14px;font-family:var(--serif);font-size:11px;color:var(--faint);letter-spacing:.1em;}
+.bestCard .date{font-family:var(--serif);font-size:26px;line-height:1.1;letter-spacing:.01em;}
+.bestCard .week{font-size:11.5px;color:var(--muted);margin-top:4px;letter-spacing:.06em;}
+.bestCard .lunarDay{font-size:13px;color:var(--ink-2);margin-top:10px;font-family:var(--serif);}
+.bestCard .gz{font-size:11.5px;color:var(--faint);margin-top:2px;letter-spacing:.08em;}
+.bestCard .score{display:flex;align-items:baseline;gap:5px;margin-top:14px;padding-top:10px;border-top:1px dashed var(--line-strong);}
+.bestCard .score b{font-family:var(--serif);font-size:22px;color:var(--red);font-weight:600;}
+.bestCard .score span{font-size:11px;color:var(--faint);}
+.bestCard .why{font-size:11.5px;color:var(--muted);line-height:1.7;margin-top:6px;}
+
+/* 择日：列表 */
+.listDay{
+  display:grid;grid-template-columns:96px 1fr auto auto;gap:12px;align-items:baseline;
+  padding:11px 4px;border-bottom:1px solid var(--line);
+}
+.listDay .d{font-family:var(--serif);font-size:14px;color:var(--ink);}
+.listDay .d small{display:block;font-family:var(--sans);font-size:11px;color:var(--faint);margin-top:1px;}
+.listDay .mid{font-size:12.5px;color:var(--ink-2);line-height:1.65;}
+.listDay .mid em{font-style:normal;color:var(--faint);margin-right:6px;}
+.listDay .tagz{display:flex;gap:6px;align-items:center;white-space:nowrap;}
+.pill{font-size:11px;padding:2px 8px;border-radius:2px;letter-spacing:.04em;border:1px solid;}
+.pill.good{color:var(--indigo);border-color:rgba(47,82,87,.4);background:rgba(47,82,87,.06);}
+.pill.bad{color:var(--red);border-color:rgba(166,50,28,.35);background:var(--red-soft);}
+.pill.mid{color:var(--muted);border-color:var(--line-strong);}
+.pill.ban{color:#fff;background:var(--red);border-color:var(--red);}
+.pill .n{font-family:var(--serif);font-weight:600;}
+
+/* 依据展开 */
+.evi{grid-column:1 / -1;margin:0 0 12px;border-left:2px solid var(--line-strong);background:var(--card-2);padding:11px 14px;}
+.evi .hd{font-size:11.5px;color:var(--faint);letter-spacing:.06em;margin-bottom:5px;}
+.evi .ln{display:flex;justify-content:space-between;gap:14px;font-size:12px;color:var(--ink-2);padding:3px 0;border-bottom:1px dotted var(--line);}
+.evi .ln:last-child{border-bottom:none;}
+.evi .ln .d{font-family:var(--serif);white-space:nowrap;}
+.evi .ln .d.pos{color:var(--indigo);}
+.evi .ln .d.neg{color:var(--red);}
+.evi .src{color:var(--faint);font-size:11px;margin-left:8px;}
+.evi .cols{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px;}
+.evi .box{border:1px solid var(--line);background:var(--card);padding:8px 11px;font-size:11.5px;color:var(--muted);line-height:1.7;}
+
+/* 八字：四柱盘 */
+.chart{
+  background:var(--card);border:1px solid var(--line-strong);padding:0;overflow-x:auto;
+}
+.chart table{width:100%;border-collapse:collapse;table-layout:fixed;min-width:560px;font-size:13.5px;}
+.chart table col{width:25%;}
+.chart th,.chart td{border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:9px 10px;text-align:center;vertical-align:middle;}
+.chart tr:last-child td{border-bottom:none;}
+.chart th:last-child,.chart td:last-child{border-right:none;}
+.chart thead th{font-family:var(--serif);font-weight:600;font-size:12.5px;letter-spacing:.1em;color:var(--muted);background:var(--card-2);}
+.chart .glyph{font-family:var(--serif);font-size:30px;line-height:1.35;font-weight:600;}
+.chart .gzRow .glyph{font-size:32px;}
+.chart .sub{font-size:11.5px;color:var(--muted);}
+.chart .rowLabel{
+  font-family:var(--serif);font-size:11.5px;color:var(--muted);background:var(--card-2);
+  text-align:left;padding-left:12px;letter-spacing:.08em;width:74px;
+}
+.chart tr.withLabel td:first-child{text-align:left;}
+
+/* 五行条 */
+.wx{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-top:16px;}
+.wxItem{border:1px solid var(--line);background:var(--card);padding:10px 12px;}
+.wxItem .k{font-family:var(--serif);font-size:14px;letter-spacing:.04em;}
+.wxItem .v{font-family:var(--serif);font-size:22px;line-height:1.3;}
+.wxItem .bar{height:3px;background:var(--line);margin-top:6px;position:relative;}
+.wxItem .bar i{position:absolute;left:0;top:0;bottom:0;background:var(--red);}
+.wxItem.mu .k{color:#4A6B3A;} .wxItem.huo .k{color:var(--red);}
+.wxItem.tu .k{color:#8A6B2E;} .wxItem.jin .k{color:#6B6558;}
+.wxItem.shui .k{color:var(--indigo);}
+
+/* 解读段 */
+.reading{background:var(--card);border-left:3px solid var(--red);padding:16px 18px;}
+.reading p{font-size:13.5px;color:var(--ink-2);margin:0 0 10px;}
+.reading p:last-child{margin:0;}
+.reading .lead2{font-family:var(--serif);font-size:15px;color:var(--ink);}
+
+/* 大运 */
+.dayun{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;}
+.dy{
+  flex:0 0 auto;border:1px solid var(--line-strong);background:var(--card);
+  padding:12px 10px;text-align:center;min-width:82px;
+}
+.dy.now{border-color:var(--red);background:var(--red-soft);}
+.dy .age{font-size:11px;color:var(--faint);}
+.dy .gz{font-family:var(--serif);font-size:18px;margin:3px 0 1px;}
+.dy .yr{font-size:10.5px;color:var(--muted);}
+.dy .mark{font-size:10px;color:var(--red);letter-spacing:.08em;margin-top:3px;}
+
+/* 今日 */
+.todayHead{
+  background:var(--hero-bg);color:var(--hero-fg);padding:26px 24px;border-radius:2px;
+  display:grid;grid-template-columns:1.1fr 1fr;gap:20px;align-items:center;
+}
+.todayHead .num{font-family:var(--serif);font-size:52px;line-height:1;letter-spacing:.01em;}
+.todayHead .meta{font-size:12px;color:var(--hero-sub);line-height:1.9;margin-top:8px;}
+.todayHead .right{border-left:1px solid rgba(237,231,216,.2);padding-left:20px;}
+.todayHead .right .k{font-size:11px;letter-spacing:.14em;color:var(--hero-k);}
+.todayHead .right .v{font-family:var(--serif);font-size:15px;color:var(--hero-fg);line-height:1.8;margin-top:2px;}
+.todayBody{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;}
+.yiji{border:1px solid var(--line);background:var(--card);padding:14px 16px;}
+.yiji h4{font-family:var(--serif);font-size:14px;margin:0 0 8px;letter-spacing:.06em;}
+.yiji h4.y{color:var(--indigo);} .yiji h4.j{color:var(--red);}
+.yiji .words{display:flex;flex-wrap:wrap;gap:6px;}
+.word{font-size:12px;color:var(--ink-2);border:1px solid var(--line-strong);background:var(--paper);padding:2px 8px;border-radius:2px;}
+
+/* 词典 */
+.lex{margin-top:34px;}
+.lex dl{margin:0;display:grid;grid-template-columns:104px 1fr;gap:9px 18px;align-items:start;}
+.lex dt{font-family:var(--serif);font-size:13px;color:var(--ink);margin:0;}
+.lex dd{font-size:12.5px;color:var(--muted);margin:0;line-height:1.7;}
+
+/* 规则书：统计 */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:16px 0 6px;}
+.stat{border:1px solid var(--line-strong);background:var(--card);padding:10px 12px;}
+.stat .k{font-size:11px;color:var(--faint);letter-spacing:.08em;}
+.stat .v{font-family:var(--serif);font-size:20px;line-height:1.5;}
+.stat .v small{font-family:var(--sans);font-size:11px;color:var(--muted);}
+
+/* 规则书：表格 */
+.kbTable{width:100%;border-collapse:collapse;font-size:12.5px;table-layout:fixed;}
+.kbTable th{font-family:var(--serif);font-size:11px;font-weight:600;color:var(--muted);text-align:left;padding:8px 7px;border-bottom:1px solid var(--line-strong);letter-spacing:.04em;}
+.kbTable td{padding:8px 7px;border-bottom:1px solid var(--line);vertical-align:top;color:var(--ink-2);line-height:1.6;word-break:break-word;}
+.kbTable td.t{font-family:var(--serif);color:var(--ink);}
+.kbTable .off td{opacity:.55;}
+.kbTable .ops{white-space:nowrap;text-align:right;}
+.kbTable .src{color:var(--faint);font-size:11px;}
+.kbTable .cond{font-family:var(--serif);color:var(--indigo);}
+.pager{display:flex;gap:6px;align-items:center;justify-content:flex-end;margin-top:12px;}
+.pager .pg{font-size:11.5px;color:var(--muted);}
+
+/* 表单面板 */
+.panel{border:1px solid var(--line-strong);background:var(--card);padding:16px 16px 14px;margin:14px 0;}
+.panel .grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+.panel .grid.four{grid-template-columns:repeat(4,1fr);}
+.panel .full{grid-column:1 / -1;}
+.panel label{font-size:11.5px;color:var(--muted);display:block;margin-bottom:4px;}
+.panel input,.panel select,.panel textarea{width:100%;font-size:13px;padding:6px 8px;}
+.panel textarea{resize:vertical;min-height:56px;line-height:1.7;}
+.panel .acts{display:flex;gap:8px;margin-top:13px;align-items:center;}
+.panel .acts .sp{flex:1;}
+.impMsg{font-size:12px;line-height:1.8;padding:11px 13px;border:1px solid var(--line-strong);background:var(--card);margin:10px 0;}
+.impMsg.err{border-color:rgba(166,50,28,.45);color:var(--red);background:var(--red-soft);}
+.impMsg.ok{border-color:rgba(47,82,87,.45);color:var(--indigo);background:rgba(47,82,87,.06);}
+
+/* 档案 chip */
+.chipbar{display:flex;gap:7px;flex-wrap:wrap;align-items:center;}
+.chip{font-size:12px;border:1px solid var(--line-strong);background:var(--card);padding:4px 9px;border-radius:2px;cursor:pointer;display:inline-flex;gap:8px;align-items:center;transition:.15s;}
+.chip:hover{border-color:var(--ink);}
+.chip.on{border-color:var(--ink);background:var(--ink);color:var(--paper);}
+.chip .x{color:var(--faint);font-size:11px;}
+.chip.on .x{color:#C4BEAF;}
+
+/* 主题切换 */
+.themeBtn{
+  font-family:var(--sans);font-size:11.5px;color:var(--ink-2);background:none;
+  border:1px solid var(--line-strong);padding:5px 10px;border-radius:2px;cursor:pointer;white-space:nowrap;
+}
+.themeBtn:hover{border-color:var(--ink);color:var(--ink);}
+
+/* 宽表横向滚动 */
+.tscroll{overflow-x:auto;}
+.tscroll .kbTable{min-width:620px;}
+
+/* 时辰表 */
+.hours{margin-top:10px;border:1px solid var(--line);background:var(--card);overflow-x:auto;}
+.hours table{width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed;min-width:520px;}
+.hours th{font-family:var(--serif);font-weight:600;font-size:11px;color:var(--muted);padding:7px 5px;border-bottom:1px solid var(--line-strong);text-align:center;letter-spacing:.04em;background:var(--card-2);}
+.hours td{padding:6px 5px;border-bottom:1px solid var(--line);border-right:1px solid var(--line);text-align:center;vertical-align:middle;color:var(--ink-2);}
+.hours tr:last-child td{border-bottom:none;}
+.hours td:last-child{border-right:none;}
+.hours .hz{font-family:var(--serif);font-size:14px;}
+.hours tr.g td{background:rgba(47,82,87,.06);}
+.hours tr.b td{background:rgba(166,50,28,.05);}
+.hours .tag{font-size:10.5px;letter-spacing:.06em;}
+.hours .tag.g{color:var(--indigo);}
+.hours .tag.b{color:var(--red);}
+.hours tr.fit{box-shadow:inset 3px 0 0 var(--red);}
+
+/* 今日：时辰条 */
+.hourChips{display:flex;flex-wrap:wrap;gap:5px;}
+.hchip{border:1px solid var(--line-strong);background:var(--paper);padding:2px 7px;font-size:11.5px;border-radius:2px;color:var(--ink-2);}
+.hchip .z{font-family:var(--serif);}
+.hchip.g{border-color:rgba(47,82,87,.5);color:var(--indigo);}
+.hchip.b{border-color:rgba(166,50,28,.4);color:var(--red);}
+
+/* 方位 */
+.posRow{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12px;color:var(--muted);margin-top:8px;}
+.posRow i{font-style:normal;color:var(--muted);opacity:.85;}
+.posRow b{font-family:var(--serif);color:var(--ink-2);font-weight:400;}
+
+/* 流年 */
+.lny{display:flex;gap:7px;overflow-x:auto;padding-bottom:6px;margin-top:10px;}
+.lnyItem{flex:0 0 auto;border:1px solid var(--line-strong);background:var(--card);padding:9px 11px;text-align:center;min-width:66px;}
+.lnyItem.now{border-color:var(--red);background:var(--red-soft);}
+.lnyItem .y{font-size:10.5px;color:var(--faint);}
+.lnyItem .gz{font-family:var(--serif);font-size:16px;margin:1px 0;}
+.lnyItem .ss{font-size:10.5px;color:var(--muted);}
+
+/* 自测结果 */
+.stResult{border:1px solid var(--line-strong);background:var(--card);padding:13px 15px;margin-top:12px;}
+.stResult .top{display:flex;align-items:baseline;gap:10px;margin-bottom:8px;}
+.stResult .big{font-family:var(--serif);font-size:22px;color:var(--red);}
+.dupmark{font-size:10.5px;color:var(--gold);border:1px solid rgba(138,107,46,.45);padding:0 5px;border-radius:2px;margin-left:6px;white-space:nowrap;}
+
+footer{border-top:1px solid var(--line);padding:22px 0 40px;}
+footer .wrap{font-size:11.5px;color:var(--faint);line-height:1.85;}
+
+@media (max-width:780px){
+  .wrap{padding:0 18px;}
+  .top .wrap{flex-direction:column;align-items:flex-start;gap:12px;padding-top:20px;}
+  .tabs{flex-wrap:wrap;}
+  .best{grid-template-columns:1fr;}
+  .todayHead{grid-template-columns:1fr;padding:20px 18px;}
+  .todayHead .num{font-size:40px;}
+  .todayHead .right{border-left:none;border-top:1px solid rgba(241,238,228,.2);padding-left:0;padding-top:14px;}
+  .todayBody{grid-template-columns:1fr;}
+  .wx{grid-template-columns:repeat(5,1fr);gap:6px;}
+  .wxItem{padding:8px 6px;}
+  .wxItem .v{font-size:17px;}
+  .listDay{grid-template-columns:1fr auto;gap:6px;}
+  .listDay .mid{grid-column:1 / -1;}
+  .row{gap:10px;}
+  .stats{grid-template-columns:1fr 1fr;}
+  .panel .grid{grid-template-columns:1fr 1fr;}
+  .evi .cols{grid-template-columns:1fr;}
+  .kbTable{font-size:12px;}
+}
+
+@media (max-width:780px){
+  .listDay{display:flex;flex-wrap:wrap;gap:4px 8px;align-items:baseline;}
+  .listDay .d{flex:0 0 auto;}
+  .listDay .tagz{margin-left:auto;}
+  .listDay .mid{flex:1 1 100%;order:5;}
+  .hours th:nth-child(3),.hours td:nth-child(3){display:none;}
+  .brand{font-size:19px;}
+  .todayHead .num{font-size:38px;}
+  .lnyItem{min-width:58px;padding:7px 8px;}
+  .stat .v{font-size:17px;}
+}
+@media (max-width:520px){
+  .wrap{padding:0 13px;}
+  .tab{padding:6px 9px;font-size:12.5px;}
+  .field{flex:1 1 100%;}
+  .field input,.field select{width:100%;min-width:0;}
+  button.go{width:100%;padding:9px 0;}
+  .hours table{font-size:11px;min-width:280px;}
+  .hours th:nth-child(5),.hours td:nth-child(5){display:none;}
+  .bestCard .date{font-size:22px;}
+  .stats{grid-template-columns:1fr 1fr;}
+  .panel .grid,.panel .grid.four{grid-template-columns:1fr;}
+  .toolbar input,.toolbar select{flex:1 1 100%;min-width:0 !important;}
+  .chipbar{gap:5px;}
+  .evi .cols{grid-template-columns:1fr;}
+}
+
+@media print{
+  .top,footer,.toolbar,.ops,.no-print,.tabs,button{display:none !important;}
+  html{color-scheme:light;}
+  body{background:#fff;color:#000;}
+  html[data-theme="dark"] body{background:#fff;color:#000;}
+  html[data-theme="dark"] input,
+  html[data-theme="dark"] select,
+  html[data-theme="dark"] textarea{background:#fff;color:#000;border-color:#999;}
+  .view{display:none !important;padding:0;}
+  .view.on{display:block !important;}
+  .bestCard,.listDay,.evi,.yiji{break-inside:avoid;}
+  .listDay{border-bottom:1px solid #bbb;}
+}
+</style>
+</head>
+<body>
+
+<div class="top no-print">
+  <div class="wrap">
+    <div class="brand">我的黄历与八字<small>离线可用 · 自己算，看得懂</small></div>
+    <div class="tabs">
+      <button class="tab on" data-view="pick">择日</button>
+      <button class="tab" data-view="chart">八字</button>
+      <button class="tab" data-view="today">今天</button>
+      <button class="tab" data-view="kb">规则书</button>
+      <button class="themeBtn" id="themeBtn">跟随系统</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 视图：择日 ===== -->
+<div class="view on" id="view-pick">
+  <div class="wrap">
+    <div class="sect">
+      <h2>挑个好日子</h2>
+      <p class="hint">选要办的事和范围，工具会逐日核对：黄历宜忌、建除、值日神、冲煞、彭祖百忌，再加上你在「规则书」里录入的地方规矩，全部摊开给你看。</p>
+    </div>
+
+    <div class="row" style="margin-bottom:8px;">
+      <div class="field">
+        <label>要办什么事</label>
+        <select id="event"></select>
+      </div>
+      <div class="field">
+        <label>从哪天开始</label>
+        <input type="date" id="fromDate">
+      </div>
+      <div class="field">
+        <label>往后看多少天</label>
+        <select id="span">
+          <option value="30">30 天</option>
+          <option value="60" selected>60 天</option>
+          <option value="90">90 天</option>
+          <option value="180">180 天</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>我的生肖（可不填）</label>
+        <select id="zodiac"></select>
+      </div>
+      <button class="go" id="runPick">开始挑</button>
+    </div>
+    <p class="hint sm" id="evNote"></p>
+
+    <div class="toolbar no-print" id="pickTools" style="display:none">
+      <span class="hint sm" id="pickSummary"></span>
+      <span class="sp"></span>
+      <button class="mini" id="pickCopy">复制结论</button>
+      <button class="mini" id="pickExport">导出 CSV</button>
+      <button class="mini" id="pickPrint">打印这一页</button>
+    </div>
+
+    <div class="divider"></div>
+    <div id="pickResult"></div>
+  </div>
+</div>
+
+<!-- ===== 视图：八字 ===== -->
+<div class="view" id="view-chart">
+  <div class="wrap">
+    <div class="sect">
+      <h2>我的生辰八字</h2>
+      <p class="hint">填出生时间（越准越好，时辰错了时柱就变了）。出生地只影响「真太阳时」校正，不确定就选默认。</p>
+    </div>
+
+    <div class="toolbar">
+      <input id="profName" placeholder="给这个档案起个名：我 / 妈 / 孩子" style="min-width:200px">
+      <button class="mini" id="profSave">存为档案</button>
+      <span class="sp"></span>
+      <div class="chipbar" id="profChips"></div>
+    </div>
+
+    <div class="row" style="margin-bottom:10px;">
+      <div class="field">
+        <label>出生日期（公历）</label>
+        <input type="date" id="birthDate">
+      </div>
+      <div class="field">
+        <label>出生时间</label>
+        <input type="time" id="birthTime" value="08:00">
+      </div>
+      <div class="field">
+        <label>性别（影响大运方向）</label>
+        <select id="gender">
+          <option value="1">男</option>
+          <option value="0">女</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>出生城市</label>
+        <select id="city"></select>
+      </div>
+      <button class="go" id="runChart">排盘</button>
+    </div>
+    <p class="hint sm">不知道时辰可以选 12:00 先看年月日三柱，时柱会不准，但前三柱仍然成立。</p>
+
+    <div class="divider"></div>
+    <div id="chartResult"></div>
+  </div>
+</div>
+
+<!-- ===== 视图：今天 ===== -->
+<div class="view" id="view-today">
+  <div class="wrap">
+    <div class="sect">
+      <h2>今天</h2>
+      <p class="hint">当天的干支、节气、宜忌与冲煞，再加上你录入的规矩在今天命中了哪些。</p>
+    </div>
+    <div id="todayResult"></div>
+  </div>
+</div>
+
+<!-- ===== 视图：规则书 ===== -->
+<div class="view" id="view-kb">
+  <div class="wrap">
+    <div class="sect">
+      <h2>规则书</h2>
+      <p class="hint">内置部分由开源农历库按通书规则计算，只读、带出处。你按自己的书录入的规则会叠在它上面，可以逐条启用或停用，也能随时导出来备份。</p>
+    </div>
+
+    <div class="stats" id="kbStats"></div>
+
+    <div class="toolbar no-print">
+      <button class="mini" id="kbNew">新增规则</button>
+      <button class="mini" id="kbImport">导入文件</button>
+      <button class="mini" id="kbExportJson">导出 JSON</button>
+      <button class="mini" id="kbExportCsv">导出 CSV</button>
+      <button class="mini" id="kbTpl">下载 CSV 模板</button>
+      <button class="mini" id="kbRollback" disabled>回滚上次导入</button>
+    </div>
+
+    <div class="toolbar no-print">
+      <input id="kbSearch" placeholder="搜索标题 / 出处 / 说明 / 事项" style="min-width:240px">
+      <select id="kbFilter">
+        <option value="">全部类别</option>
+        <option value="禁忌">禁忌</option>
+        <option value="宜日">宜日</option>
+        <option value="民俗">民俗</option>
+        <option value="门派对法">门派对法</option>
+        <option value="其他">其他</option>
+      </select>
+      <select id="kbOnOff">
+        <option value="">启用状态不限</option>
+        <option value="1">仅看已启用</option>
+        <option value="0">仅看已停用</option>
+      </select>
+      <span class="sp"></span>
+      <span class="hint sm" id="kbCount"></span>
+    </div>
+
+    <input type="file" id="kbFile" accept=".json,.csv,.txt" style="display:none">
+    <div id="kbImportBox"></div>
+    <div id="kbEditor"></div>
+    <div id="kbList"></div>
+    <div class="pager no-print" id="kbPager"></div>
+
+    <div class="divider"></div>
+    <h2 style="font-size:16px">规则自测</h2>
+    <p class="hint sm" style="margin-bottom:10px">录完规矩先在这里试一天：看它会不会命中、扣多少分、总共多少分。核对无误再去择日页面。</p>
+    <div class="toolbar no-print">
+      <input type="date" id="stDate">
+      <select id="stEvent"></select>
+      <select id="stZodiac"></select>
+      <button class="mini" id="stRun">测这一天</button>
+    </div>
+    <div id="stOut"></div>
+
+    <div class="divider"></div>
+    <h2 style="font-size:16px">内置规则（只读）</h2>
+    <p class="hint sm" style="margin-bottom:10px">这些由农历库按传统历法算出，不能改。想改变对某件事的判断，用上面的自定义规则去加减分或一票否决。</p>
+    <div id="kbBuiltin"></div>
+
+    <div class="divider"></div>
+    <h2 style="font-size:16px">自定义事项</h2>
+    <p class="hint sm" style="margin-bottom:10px">黄历里没有的地方习俗（上梁、谢土、开光、过礼等），在这里加一项，填它在黄历里对应的词，「择日」的下拉里就能选到。</p>
+    <div id="evList"></div>
+    <div class="toolbar no-print"><button class="mini" id="evNew">新增事项</button></div>
+    <div id="evEditor"></div>
+
+    <div class="divider"></div>
+    <h2 style="font-size:16px">打分权重</h2>
+    <p class="hint sm" style="margin-bottom:10px">内置各项占多少分。改完立刻对「择日」生效，恢复默认可一键还原。</p>
+    <div id="wPanel"></div>
+  </div>
+</div>
+
+<footer>
+  <div class="wrap">
+    本工具用开源农历库按传统历法规则计算，结果用于文化学习与生活参考，不构成对未来的判断，也不作为医疗、投资、婚姻等重大决定的依据。<br>
+    择日分数是把当天的黄历条目与你录入的规矩做机械匹配得到的初筛排序，不是真正的择日术——传统择日还要看神煞、方位与主事人的八字配合。规则书里的自定义条目由你自己录入并标注出处，工具不替你判断对错。
+  </div>
+</footer>
+
+<script src="assets/lunar.js"></script>
+<script>
+/* ================= 基础表 ================= */
+const GAN_WX = {甲:'木',乙:'木',丙:'火',丁:'火',戊:'土',己:'土',庚:'金',辛:'金',壬:'水',癸:'水'};
+const ZHI_WX = {子:'水',丑:'土',寅:'木',卯:'木',辰:'土',巳:'火',午:'火',未:'土',申:'金',酉:'金',戌:'土',亥:'水'};
+const WX_ORDER = ['木','火','土','金','水'];
+const WX_CLASS = {木:'mu',火:'huo',土:'tu',金:'jin',水:'shui'};
+
+const GAN_IMAGE = {
+  甲:'参天大树，向上生长', 乙:'花草藤蔓，柔韧缠绕', 丙:'太阳，外放照人',
+  丁:'灯烛，专注一点', 戊:'山，厚重承载', 己:'田园，包容细碎',
+  庚:'刀斧，果断刚硬', 辛:'珠玉，精致敏感', 壬:'江河，流动奔涌', 癸:'雨露，渗透无声'
+};
+
+const SHISHEN_NOTE = {
+  '比肩':'同类与伙伴，也指"我要自己来"',
+  '劫财':'竞争与消耗，也指行动力和朋友',
+  '食神':'才华、享受、慢表达',
+  '伤官':'突破规则、锋芒与创意',
+  '偏财':'流动的机会财、人际资源',
+  '正财':'稳定的收入与执行',
+  '七杀':'压力、挑战与掌控欲',
+  '正官':'责任、秩序、规则',
+  '偏印':'直觉、偏门的学问',
+  '正印':'庇护、学习、被支持',
+  '日主':'你自己的那个字'
+};
+
+const ZHIXING_SCORE = {建:0,除:8,满:8,平:-10,定:8,执:0,破:-26,危:-10,成:9,收:0,开:9,闭:-18};
+const ZHIXING_MEAN = {
+  建:'万物生育、开始之日', 除:'除旧布新、扫除之日', 满:'圆满、丰足之日',
+  平:'平常、不吉不凶之日', 定:'安定、定盟之日', 执:'执行、执持之日',
+  破:'破败、大耗之日，传统最忌办事', 危:'危险、不可冒进之日',
+  成:'成就、结果之日', 收:'收获、收纳之日', 开:'开通、开始之日', 闭:'闭藏、闭塞之日'
+};
+const ZHIXING_LIST = ['建','除','满','平','定','执','破','危','成','收','开','闭'];
+const TIANSHEN_ALL = ['青龙','明堂','天刑','朱雀','金匮','天德','白虎','玉堂','天牢','玄武','司命','勾陈'];
+const TIANSHEN_GOOD = ['青龙','明堂','金匮','天德','玉堂','司命'];
+const XIU_LIST = ['角','亢','氐','房','心','尾','箕','斗','牛','女','虚','危','室','壁','奎','娄','胃','昴','毕','觜','参','井','鬼','柳','星','张','翼','轸'];
+const JIEQI_LIST = ['立春','雨水','惊蛰','春分','清明','谷雨','立夏','小满','芒种','夏至','小暑','大暑','立秋','处暑','白露','秋分','寒露','霜降','立冬','小雪','大雪','冬至','小寒','大寒'];
+const SILI = ['春分','秋分','夏至','冬至'];
+const SIJUE = ['立春','立夏','立秋','立冬'];
+
+const BUILTIN_DOC = [
+  {t:'黄历宜忌', d:'当天宜做、忌做的事项清单，逐条与所选事项对应的词比对，宜命中加分、忌命中减分。', src:'通书宜忌（农历库计算）'},
+  {t:'建除十二值', d:'建、除、满、平、定、执、破、危、成、收、开、闭十二类，按各自吉凶加减分，其中破日最重。', src:'《协纪辨方书》建除十二神'},
+  {t:'黄道黑道十二神', d:'青龙、明堂、金匮、天德、玉堂、司命为黄道吉神；天刑、朱雀、白虎、天牢、玄武、勾陈为黑道凶神。', src:'《协纪辨方书》黄黑道日'},
+  {t:'冲煞', d:'当天所冲的生肖与煞方。若冲的正是你填的生肖，减分并在结果里标出来。', src:'通书冲煞'},
+  {t:'四离四绝', d:'四立（立春、立夏、立秋、立冬）前一日为四绝，二分二至（春分、秋分、夏至、冬至）前一日为四离，传统上不办嫁娶、不出远门。', src:'《协纪辨方书》四离四绝'},
+  {t:'二十八宿值日', d:'值日星宿的吉凶，作为小幅加减。', src:'通书二十八宿'},
+  {t:'彭祖百忌', d:'按当日天干、地支对应的忌事口诀，只在“依据”里提示，不参与打分。', src:'通书彭祖百忌'}
+];
+
+/* 内置事项：id 固定，便于规则引用 */
+const BUILTIN_EVENTS = [
+  {id:'e0', k:'搬家 / 移居', words:['移徙','入宅'], note:'黄历对应「移徙」「入宅」'},
+  {id:'e1', k:'租房 / 入住新居', words:['入宅','移徙','安床'], note:'黄历对应「入宅」「移徙」'},
+  {id:'e2', k:'开业 / 开张', words:['开市','立券','交易'], note:'黄历对应「开市」「立券」'},
+  {id:'e3', k:'签合同 / 谈合作', words:['立券','交易','纳财'], note:'黄历对应「立券」「交易」'},
+  {id:'e4', k:'结婚 / 领证', words:['嫁娶','纳采','订盟'], note:'黄历对应「嫁娶」「纳采」'},
+  {id:'e5', k:'订婚 / 见家长', words:['纳采','订盟','会亲友'], note:'黄历对应「纳采」「订盟」「会亲友」'},
+  {id:'e6', k:'出行 / 旅游', words:['出行'], note:'黄历对应「出行」'},
+  {id:'e7', k:'装修 / 动工', words:['修造','拆卸','动土'], note:'黄历对应「修造」「拆卸」「动土」'},
+  {id:'e8', k:'买车 / 提车', words:['交易','纳财'], note:'黄历对应「交易」「纳财」'},
+  {id:'e9', k:'安床 / 换床', words:['安床'], note:'黄历对应「安床」'},
+  {id:'e10', k:'祭祀 / 扫墓', words:['祭祀','扫舍'], note:'黄历对应「祭祀」「扫舍」'},
+  {id:'e11', k:'理发 / 美容', words:['剃头'], note:'黄历对应「剃头」'},
+  {id:'e12', k:'看病 / 就医', words:['求医','疗病'], note:'黄历对应「求医」「疗病」，仅作传统习俗参考'},
+  {id:'e13', k:'考试 / 面试', words:['赴任','词讼'], note:'黄历没有直接对应，这里按「赴任」近似，参考价值有限'},
+  {id:'e14', k:'求财 / 投资', words:['纳财','开仓','出货财'], note:'黄历对应「纳财」「开仓」；投资决策请勿依赖本工具'}
+];
+
+const CITIES = [
+  ['北京',116.41],['上海',121.47],['广州',113.26],['深圳',114.06],['杭州',120.16],
+  ['南京',118.78],['成都',104.07],['重庆',106.55],['武汉',114.30],['西安',108.95],
+  ['天津',117.20],['苏州',120.62],['长沙',112.94],['郑州',113.62],['济南',117.00],
+  ['青岛',120.38],['沈阳',123.43],['哈尔滨',126.63],['长春',125.32],['大连',121.62],
+  ['昆明',102.71],['贵阳',106.71],['南宁',108.37],['福州',119.30],['厦门',118.09],
+  ['兰州',103.83],['西宁',101.78],['银川',106.23],['乌鲁木齐',87.62],['拉萨',91.14],
+  ['呼和浩特',111.75],['海口',110.20],['台北',121.52],['香港',114.17],['澳门',113.54]
+];
+const ZODIACS = ['鼠','牛','虎','兔','龙','蛇','马','羊','猴','鸡','狗','猪'];
+
+/* ================= 工具函数 ================= */
+const pad = n => (n<10?'0':'')+n;
+const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
+
+function esc(s){
+  return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function uid(p){
+  return (p||'r') + Date.now().toString(36) + Math.floor(Math.random()*1000).toString(36);
+}
+function dayOfYear(y,m,d){
+  const t = Date.UTC(y,m-1,d), t0 = Date.UTC(y,0,0);
+  return Math.floor((t-t0)/86400000);
+}
+/* 均时差（分钟），Meeus 常用近似式，误差约半分钟 */
+function eotMinutes(y,m,d){
+  const n = dayOfYear(y,m,d);
+  const B = 2*Math.PI*(n-81)/364;
+  return 9.87*Math.sin(2*B) - 7.53*Math.cos(B) - 1.5*Math.sin(B);
+}
+/* 按经度与均时差把北京时间换算成当地真太阳时 */
+function toTrueSolar(y,m,d,hh,mi,lng){
+  const eot = eotMinutes(y,m,d);
+  const offsetMin = (lng-120)*4 + eot;
+  const t = Date.UTC(y,m-1,d,hh,mi,0) + offsetMin*60000;
+  const u = new Date(t);
+  return {
+    y:u.getUTCFullYear(), m:u.getUTCMonth()+1, d:u.getUTCDate(),
+    h:u.getUTCHours(), mi:u.getUTCMinutes(), offsetMin:offsetMin
+  };
+}
+function solarOf(y,m,d,hh,mi){
+  return Solar.fromYmdHms(y,m,d,hh||0,mi||0,0);
+}
+function ageNow(by,bm,bd){
+  const now = new Date();
+  let a = now.getFullYear()-by;
+  if(now.getMonth()+1<bm || (now.getMonth()+1===bm && now.getDate()<bd)) a--;
+  return Math.max(0,a);
+}
+function downloadText(name, text, mime){
+  const blob = new Blob([text], {type:(mime||'text/plain')+';charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = name;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 1200);
+}
+
+/* ================= 主题 ================= */
+const THEME_KEY = 'mybazi.theme';
+function themeMode(){
+  try{ return localStorage.getItem(THEME_KEY) || 'auto'; }catch(e){ return 'auto'; }
+}
+function applyTheme(mode){
+  const mq = (window.matchMedia) ? window.matchMedia('(prefers-color-scheme: dark)') : null;
+  const dark = (mode==='dark') || (mode==='auto' && mq && mq.matches);
+  document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+  const btn = document.getElementById('themeBtn');
+  if(btn) btn.textContent = (mode==='auto') ? ('跟随系统 · '+(dark?'深':'浅')) : (mode==='dark'?'深色':'浅色');
+  try{ localStorage.setItem(THEME_KEY, mode); }catch(e){}
+}
+function cycleTheme(){
+  const cur = themeMode();
+  const next = (cur==='auto') ? 'dark' : (cur==='dark' ? 'light' : 'auto');
+  applyTheme(next);
+}
+
+/* ================= 十神换算（日主 vs 流年干） ================= */
+const GAN_LIST = '甲乙丙丁戊己庚辛壬癸';
+const ZHI_LIST = '子丑寅卯辰巳午未申酉戌亥';
+const GAN_YIN = {乙:1,丁:1,己:1,辛:1,癸:1};
+const WX_SHENG = {木:'火',火:'土',土:'金',金:'水',水:'木'};
+const WX_KE = {木:'土',土:'水',水:'火',火:'金',金:'木'};
+const SS_PAIRS = {same:['比肩','劫财'], out:['食神','伤官'], wealth:['偏财','正财'], kill:['七杀','正官'], into:['偏印','正印']};
+
+function shiShenOf(dayGan, gan){
+  const dw = GAN_WX[dayGan], tw = GAN_WX[gan];
+  const sameP = (!!GAN_YIN[dayGan]) === (!!GAN_YIN[gan]);
+  let rel = 'into';
+  if(dw===tw) rel = 'same';
+  else if(WX_SHENG[dw]===tw) rel = 'out';
+  else if(WX_KE[dw]===tw) rel = 'wealth';
+  else if(WX_KE[tw]===dw) rel = 'kill';
+  const p = SS_PAIRS[rel];
+  return sameP ? p[0] : p[1];
+}
+function yearGanZhi(y){
+  const i = ((y-1984)%60+60)%60;
+  return GAN_LIST.charAt(i%10) + ZHI_LIST.charAt(i%12);
+}
+function liuNianHtml(dayGan, startY, n){
+  const nowY = new Date().getFullYear();
+  let h = '';
+  for(let y=startY; y<startY+n; y++){
+    const gz = yearGanZhi(y);
+    h += '<div class="lnyItem'+(y===nowY?' now':'')+'">'
+      + '<div class="y">'+y+'</div>'
+      + '<div class="gz">'+gz+'</div>'
+      + '<div class="ss">'+shiShenOf(dayGan, gz.charAt(0))+'</div>'
+      + '</div>';
+  }
+  return '<div class="lny">'+h+'</div>';
+}
+
+/* ================= 时辰与方位 ================= */
+function hourTable(solar, ev){
+  const times = solar.getLunar().getTimes().slice(0,12);
+  const rows = times.map(t=>{
+    const yi = t.getYi()||[], ji = t.getJi()||[];
+    const luck = t.getTianShenLuck();
+    const hitYi = ev ? ev.words.filter(w=>yi.indexOf(w)>=0) : [];
+    const hitJi = ev ? ev.words.filter(w=>ji.indexOf(w)>=0) : [];
+    let fit = '—';
+    if(ev){
+      if(hitYi.length) fit = '<span class="tag g">宜'+hitYi.join('、')+'</span>';
+      else if(hitJi.length) fit = '<span class="tag b">忌'+hitJi.join('、')+'</span>';
+    }else{
+      fit = yi.slice(0,3).join(' ') || '—';
+    }
+    return '<tr class="'+(luck==='吉'?'g':'b')+(hitYi.length?' fit':'')+'">'
+      + '<td class="hz">'+t.getZhi()+'</td>'
+      + '<td>'+t.getMinHm()+'–'+t.getMaxHm()+'</td>'
+      + '<td class="hz">'+t.getGanZhi()+'</td>'
+      + '<td><span class="tag '+(luck==='吉'?'g':'b')+'">'+t.getTianShen()+' '+luck+'</span></td>'
+      + '<td>冲'+t.getChongShengXiao()+'</td>'
+      + '<td>'+fit+'</td>'
+      + '</tr>';
+  }).join('');
+  return '<div class="hours"><table>'
+    + '<thead><tr><th>时辰</th><th>时段</th><th>时干支</th><th>值神</th><th>冲</th><th>与本事项</th></tr></thead>'
+    + '<tbody>'+rows+'</tbody></table></div>';
+}
+function hourChips(lunar){
+  return lunar.getTimes().slice(0,12).map(t=>
+    '<span class="hchip '+(t.getTianShenLuck()==='吉'?'g':'b')+'"><span class="z">'+t.getZhi()+'</span> '+t.getTianShen()+'</span>'
+  ).join('');
+}
+function posRow(lunar){
+  return '<div class="posRow">'
+    + '<span><i>喜神</i> <b>'+lunar.getDayPositionXiDesc()+'</b></span>'
+    + '<span><i>财神</i> <b>'+lunar.getDayPositionCaiDesc()+'</b></span>'
+    + '<span><i>福神</i> <b>'+lunar.getDayPositionFuDesc()+'</b></span>'
+    + '<span><i>阳贵</i> <b>'+lunar.getDayPositionYangGuiDesc()+'</b></span>'
+    + '<span><i>阴贵</i> <b>'+lunar.getDayPositionYinGuiDesc()+'</b></span>'
+    + '<span><i>胎神</i> <b>'+lunar.getDayPositionTai()+'</b></span>'
+    + '</div>';
+}
+
+/* ================= 知识库 ================= */
+const KB_KEY = 'mybazi.kb.v2';
+const DEF_SET = {base:48, yi:9, ji:14, chong:12, useZx:true, useTs:true, useXiu:true};
+let KB = {v:2, set:Object.assign({},DEF_SET), events:[], rules:[]};
+let IDX = null;
+let HAS_JQ_OFF = false;
+const PAGE_SIZE = 40;
+const KBUI = {q:'', cat:'', onoff:'', page:0};
+
+function loadKB(){
+  try{
+    const raw = localStorage.getItem(KB_KEY);
+    if(raw){
+      const o = JSON.parse(raw);
+      if(o && o.v===2){
+        KB.set = Object.assign({}, DEF_SET, o.set||{});
+        KB.events = Array.isArray(o.events)? o.events : [];
+        KB.rules  = Array.isArray(o.rules)? o.rules : [];
+      }
+    }
+  }catch(e){}
+  rebuildIndex();
+}
+function saveKB(){
+  let ok = true;
+  try{
+    const s = JSON.stringify({v:2, set:KB.set, events:KB.events, rules:KB.rules});
+    localStorage.setItem(KB_KEY, s);
+  }catch(e){ ok = false; }
+  rebuildIndex();
+  if(!ok) kbMsg('err', '保存失败了：浏览器本地存储可能已经满。先去「导出 JSON」备份一份，再删掉一些不用的规则。');
+  return ok;
+}
+
+/* --- 规则类型与条件解析 --- */
+const KINDS = [
+  {k:'lun', label:'农历月日', hint:'3-3 = 农历三月初三；3-* = 三月的每一天；*-15 = 每月十五'},
+  {k:'sol', label:'公历月日', hint:'1-1 = 一月一日；12-25 = 十二月二十五'},
+  {k:'gz',  label:'日干支',  hint:'甲子 = 甲子日；甲 = 天干为甲的日子；子 = 地支为子的日子'},
+  {k:'zx',  label:'建除十二值', hint:'破 = 破日；成 = 成日'},
+  {k:'ts',  label:'值日神',  hint:'白虎 = 值日神为白虎的日子'},
+  {k:'jq',  label:'节气',    hint:'立春 = 立春当天；立春-1 = 立春前一天'},
+  {k:'xx',  label:'二十八宿', hint:'角 = 值日宿为角'},
+  {k:'wk',  label:'星期',    hint:'0 是周日，1 是周一 … 6 是周六'},
+  {k:'zc',  label:'冲某个生肖', hint:'羊 = 当天冲羊'}
+];
+const KIND_MAP = {}; KINDS.forEach(x=>KIND_MAP[x.k]=x);
+
+function numOrStar(s){
+  s = String(s).trim();
+  if(s==='*') return '*';
+  if(/^\d+$/.test(s)) return +s;
+  return null;
+}
+function parseOne(kind, s){
+  s = String(s).trim();
+  if(kind==='lun' || kind==='sol'){
+    const p = s.split('-');
+    if(p.length!==2) return {err:'要写成 月-日，例如 3-3'};
+    const m = numOrStar(p[0]), d = numOrStar(p[1]);
+    if(m===null || d===null) return {err:'月和日只能填数字或 *'};
+    if(m!=='*' && (m<1||m>12)) return {err:'月份要在 1–12 之间'};
+    if(d!=='*' && (d<1||d>31)) return {err:'日期要在 1–31 之间'};
+    return {m:{m,d}};
+  }
+  if(kind==='gz'){
+    if(s.length===2 && GAN_WX[s[0]] && ZHI_WX[s[1]]) return {m:{gz:s}};
+    if(s.length===1 && GAN_WX[s]) return {m:{gan:s}};
+    if(s.length===1 && ZHI_WX[s]) return {m:{zhi:s}};
+    return {err:'要写成 甲子（干支）、甲（天干）或 子（地支）'};
+  }
+  if(kind==='zx'){
+    if(ZHIXING_LIST.indexOf(s)>=0) return {m:{v:s}};
+    return {err:'只能填 '+ZHIXING_LIST.join('、')+' 其中之一'};
+  }
+  if(kind==='ts'){
+    if(TIANSHEN_ALL.indexOf(s)>=0) return {m:{v:s}};
+    return {err:'只能填 '+TIANSHEN_ALL.join('、')+' 其中之一'};
+  }
+  if(kind==='xx'){
+    if(XIU_LIST.indexOf(s)>=0) return {m:{v:s}};
+    return {err:'只能填 '+XIU_LIST.join('')+' 其中之一'};
+  }
+  if(kind==='zc'){
+    if(ZODIACS.indexOf(s)>=0) return {m:{v:s}};
+    return {err:'生肖只能填 '+ZODIACS.join('、')};
+  }
+  if(kind==='jq'){
+    const p = s.split('-');
+    const name = (p[0]||'').trim();
+    if(JIEQI_LIST.indexOf(name)<0) return {err:'节气名要写全，例如 立春、惊蛰、清明'};
+    const off = p.length>1 ? +p[1] : 0;
+    if(p.length>1 && (isNaN(off) || off<0 || off>3)) return {err:'节气后面只能跟 -1 到 -3，表示前几天'};
+    return {m:{v:name, off:off}};
+  }
+  if(kind==='wk'){
+    const v = +s;
+    if(!(v>=0 && v<=6)) return {err:'星期要填 0–6，0 是周日'};
+    return {m:{v:v}};
+  }
+  return {err:'未知的规则类型'};
+}
+function parseMatch(kind, str){
+  const parts = String(str||'').split('|').map(t=>t.trim()).filter(Boolean);
+  if(!parts.length) return {ok:false, err:'条件不能留空'};
+  const ms = [];
+  for(let i=0;i<parts.length;i++){
+    const r = parseOne(kind, parts[i]);
+    if(r.err) return {ok:false, err:'「'+parts[i]+'」'+r.err};
+    ms.push(r.m);
+  }
+  return {ok:true, m:ms};
+}
+function matchText(rule){
+  const names = {'lun':'农历','sol':'公历','gz':'日干支','zx':'建除','ts':'值日神','jq':'节气','xx':'宿','wk':'星期','zc':'冲'};
+  const parts = (rule.m||[]).map(m=>{
+    if(rule.kind==='lun') return (m.m==='*'?'每月':m.m+'月')+(m.d==='*'?'每天':m.d+'日');
+    if(rule.kind==='sol') return m.m+'月'+m.d+'日';
+    if(rule.kind==='gz') return m.gz || ('天干'+m.gan) || ('地支'+m.zhi);
+    if(rule.kind==='jq') return m.v + (m.off? (' 前'+m.off+'日') : ' 当天');
+    if(rule.kind==='wk') return ['周日','周一','周二','周三','周四','周五','周六'][m.v];
+    if(rule.kind==='zc') return '冲'+m.v;
+    return m.v;
+  });
+  return (names[rule.kind]||'') + '：' + parts.join(' / ');
+}
+
+/* --- 索引 --- */
+function ruleKeys(r){
+  const keys = [];
+  (r.m||[]).forEach(m=>{
+    if(r.kind==='lun') keys.push('lun:'+m.m+'-'+m.d);
+    else if(r.kind==='sol') keys.push('sol:'+m.m+'-'+m.d);
+    else if(r.kind==='gz'){
+      if(m.gz) keys.push('gz:'+m.gz);
+      if(m.gan) keys.push('gzG:'+m.gan);
+      if(m.zhi) keys.push('gzZ:'+m.zhi);
+    }
+    else if(r.kind==='zx') keys.push('zx:'+m.v);
+    else if(r.kind==='ts') keys.push('ts:'+m.v);
+    else if(r.kind==='xx') keys.push('xx:'+m.v);
+    else if(r.kind==='zc') keys.push('zc:'+m.v);
+    else if(r.kind==='wk') keys.push('wk:'+m.v);
+    else if(r.kind==='jq') keys.push('jq:'+m.v+'-'+(m.off||0));
+  });
+  return keys;
+}
+function rebuildIndex(){
+  IDX = new Map();
+  HAS_JQ_OFF = false;
+  KB.rules.forEach(r=>{
+    if(r.on===false) return;
+    if(r.kind==='jq' && (r.m||[]).some(m=>m.off>0)) HAS_JQ_OFF = true;
+    ruleKeys(r).forEach(k=>{
+      let a = IDX.get(k);
+      if(!a){ a = []; IDX.set(k, a); }
+      a.push(r);
+    });
+  });
+}
+function dayRuleKeys(solar, lunar){
+  const keys = [];
+  const lm = Math.abs(lunar.getMonth()), ld = lunar.getDay();
+  keys.push('lun:'+lm+'-'+ld, 'lun:'+lm+'-*', 'lun:*-'+ld);
+  keys.push('sol:'+solar.getMonth()+'-'+solar.getDay());
+  const gz = lunar.getDayInGanZhi();
+  keys.push('gz:'+gz, 'gzG:'+gz.charAt(0), 'gzZ:'+gz.charAt(1));
+  keys.push('zx:'+lunar.getZhiXing(), 'ts:'+lunar.getDayTianShen(), 'xx:'+lunar.getXiu());
+  keys.push('zc:'+lunar.getDayChongShengXiao());
+  keys.push('wk:'+solar.getWeek());
+  const jq = lunar.getJieQi();
+  if(jq) keys.push('jq:'+jq+'-0');
+  if(HAS_JQ_OFF){
+    for(let n=1;n<=3;n++){
+      const jqN = solar.next(n).getLunar().getJieQi();
+      if(jqN) keys.push('jq:'+jqN+'-'+n);
+    }
+  }
+  return keys;
+}
+function ruleApplies(r, ev){
+  if(!r.scope || !r.scope.length) return true;
+  return r.scope.indexOf(ev.id)>=0 || r.scope.indexOf(ev.k)>=0;
+}
+
+/* ================= 择日评分 ================= */
+function evalDay(solar, ev, zodiac){
+  const lunar = solar.getLunar();
+  const yi = lunar.getDayYi();
+  const ji = lunar.getDayJi();
+  const zx = lunar.getZhiXing();
+  const tsName = lunar.getDayTianShen();
+  const tsLuck = lunar.getDayTianShenLuck();
+  const chongZ = lunar.getDayChongShengXiao();
+  const xiu = lunar.getXiu();
+  const xiuLuck = lunar.getXiuLuck();
+  const S = KB.set;
+
+  let s = +S.base;
+  const hits = [];
+  const reasons = [];
+  let ban = false;
+
+  const hitYi = ev.words.filter(w=>yi.indexOf(w)>=0);
+  hitYi.forEach(()=>{ s += +S.yi; });
+  if(hitYi.length){
+    hits.push({t:'黄历宜「'+hitYi.join('、')+'」', d:'+'+((+S.yi)*hitYi.length), src:'通书宜忌', ok:true});
+    reasons.push('宜'+hitYi.join('、'));
+  }
+
+  const hitJi = ev.words.filter(w=>ji.indexOf(w)>=0);
+  hitJi.forEach(()=>{ s -= +S.ji; });
+  if(hitJi.length){
+    hits.push({t:'黄历忌「'+hitJi.join('、')+'」', d:'-'+((+S.ji)*hitJi.length), src:'通书宜忌', ok:false});
+    reasons.push('忌'+hitJi.join('、'));
+  }
+
+  if(S.useZx){
+    const zs = ZHIXING_SCORE[zx] || 0;
+    if(zs){
+      s += zs;
+      hits.push({t:'建除值「'+zx+'」：'+ZHIXING_MEAN[zx], d:(zs>0?'+':'')+zs, src:'《协纪辨方书》建除十二神', ok:zs>0});
+      if(zs<0) reasons.push(zx+'日');
+    }
+  }
+
+  if(S.useTs){
+    const d = (tsLuck==='吉') ? 6 : -12;
+    s += d;
+    hits.push({t:'值日神「'+tsName+'」为'+tsLuck, d:(d>0?'+':'')+d, src:'《协纪辨方书》黄黑道日', ok:d>0});
+  }
+
+  if(S.useXiu){
+    const d = (xiuLuck==='吉') ? 5 : -5;
+    s += d;
+    hits.push({t:'值日宿「'+xiu+'」为'+xiuLuck+'宿', d:(d>0?'+':'')+d, src:'通书二十八宿', ok:d>0});
+  }
+
+  const jqNext = solar.next(1).getLunar().getJieQi();
+  if(jqNext){
+    if(SIJUE.indexOf(jqNext)>=0){
+      s -= 10;
+      hits.push({t:'明日'+jqNext+'，今天是四绝日', d:'-10', src:'《协纪辨方书》四离四绝', ok:false});
+      reasons.push('四绝日');
+    }else if(SILI.indexOf(jqNext)>=0){
+      s -= 10;
+      hits.push({t:'明日'+jqNext+'，今天是四离日', d:'-10', src:'《协纪辨方书》四离四绝', ok:false});
+      reasons.push('四离日');
+    }
+  }
+
+  if(zodiac && chongZ===zodiac){
+    s -= +S.chong;
+    hits.unshift({t:'冲你的生肖（'+zodiac+'）', d:'-'+S.chong, src:'通书冲煞', ok:false});
+    reasons.unshift('冲'+zodiac);
+  }
+
+  const seen = {};
+  dayRuleKeys(solar, lunar).forEach(k=>{
+    const arr = IDX.get(k);
+    if(!arr) return;
+    arr.forEach(r=>{
+      if(seen[r.id]) return;
+      seen[r.id] = 1;
+      if(!ruleApplies(r, ev)) return;
+      if(r.ban){
+        ban = true;
+        hits.push({t:'你的规则「'+esc(r.title)+'」：一票否决', d:'不可用', src:r.src||'', ok:false, ban:true});
+        reasons.push('触犯'+r.title);
+      }else{
+        const d = +r.score || 0;
+        s += d;
+        if(d){
+          hits.push({t:'你的规则「'+esc(r.title)+'」', d:(d>0?'+':'')+d, src:r.src||'', ok:d>0});
+          if(d<0) reasons.push(r.title);
+        }
+      }
+    });
+  });
+
+  return {
+    solar, lunar, yi, ji, zx, tsName, tsLuck, xiu, xiuLuck, chongZ,
+    hits, reasons, ban,
+    score: ban ? 5 : Math.round(clamp(s, 5, 96))
+  };
+}
+
+/* ================= 档案 ================= */
+const PROF_KEY = 'mybazi.profiles.v2';
+let PROFILES = [];
+let CUR_PROF = '';
+
+function loadProfiles(){
+  try{
+    const o = JSON.parse(localStorage.getItem(PROF_KEY)||'[]');
+    if(Array.isArray(o)) PROFILES = o.filter(p=>p && p.bd);
+  }catch(e){ PROFILES = []; }
+}
+function saveProfiles(){
+  try{ localStorage.setItem(PROF_KEY, JSON.stringify(PROFILES)); }catch(e){}
+}
+
+/* ================= 事项 ================= */
+function allEvents(){ return BUILTIN_EVENTS.concat(KB.events||[]); }
+function eventById(id){
+  const l = allEvents();
+  for(let i=0;i<l.length;i++) if(l[i].id===id) return l[i];
+  return null;
+}
+
+/* ================= 初始化 ================= */
+function initSelects(){
+  const ev = document.getElementById('event');
+  ev.innerHTML = '';
+  BUILTIN_EVENTS.forEach(e=>{
+    const o = document.createElement('option');
+    o.value = e.id; o.textContent = e.k; ev.appendChild(o);
+  });
+  if((KB.events||[]).length){
+    const g = document.createElement('optgroup');
+    g.label = '我加的事项';
+    KB.events.forEach(e=>{
+      const o = document.createElement('option');
+      o.value = e.id; o.textContent = e.name || e.k; g.appendChild(o);
+    });
+    ev.appendChild(g);
+  }
+
+  const z = document.getElementById('zodiac');
+  z.innerHTML = '';
+  const none = document.createElement('option');
+  none.value = ''; none.textContent = '不填'; z.appendChild(none);
+  ZODIACS.forEach(v=>{
+    const o = document.createElement('option'); o.value = v; o.textContent = v; z.appendChild(o);
+  });
+
+  const c = document.getElementById('city');
+  c.innerHTML = '';
+  CITIES.forEach(([name],i)=>{
+    const o = document.createElement('option');
+    o.value = i; o.textContent = name; c.appendChild(o);
+  });
+
+  /* 规则自测用的两个下拉 */
+  const ste = document.getElementById('stEvent');
+  if(ste){
+    const keep = ste.value;
+    ste.innerHTML = '';
+    allEvents().forEach(e=>{
+      const o = document.createElement('option');
+      o.value = e.id; o.textContent = e.k || e.name; ste.appendChild(o);
+    });
+    if(keep) ste.value = keep;
+  }
+  const stz = document.getElementById('stZodiac');
+  if(stz){
+    const keep2 = stz.value;
+    stz.innerHTML = '';
+    const n2 = document.createElement('option');
+    n2.value = ''; n2.textContent = '不看生肖'; stz.appendChild(n2);
+    ZODIACS.forEach(v=>{
+      const o = document.createElement('option'); o.value=v; o.textContent=v; stz.appendChild(o);
+    });
+    stz.value = keep2 || '';
+  }
+  const std = document.getElementById('stDate');
+  if(std && !std.value){
+    const t = new Date();
+    std.value = t.getFullYear()+'-'+pad(t.getMonth()+1)+'-'+pad(t.getDate());
+  }
+
+  const today = new Date();
+  document.getElementById('fromDate').value = today.getFullYear()+'-'+pad(today.getMonth()+1)+'-'+pad(today.getDate());
+  if(!document.getElementById('birthDate').value) document.getElementById('birthDate').value = '1995-06-15';
+
+  ev.addEventListener('change', showEvNote);
+  showEvNote();
+}
+
+function showEvNote(){
+  const e = eventById(document.getElementById('event').value);
+  const el = document.getElementById('evNote');
+  el.textContent = e ? (e.note || ('黄历对应「'+(e.words||[]).join('」「')+'」')) : '';
+}
+
+/* ================= 视图切换 ================= */
+document.querySelectorAll('.tab').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.tab').forEach(b=>b.classList.remove('on'));
+    btn.classList.add('on');
+    document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));
+    document.getElementById('view-'+btn.dataset.view).classList.add('on');
+    const v = btn.dataset.view;
+    if(v==='today') renderToday();
+    if(v==='kb') renderKb();
+    if(v==='chart') renderChips();
+    window.scrollTo({top:0,behavior:'smooth'});
+  });
+});
+
+/* ================= 择日 ================= */
+let LAST_ROWS = [];
+let LAST_EV = null;
+let LAST_SPAN = 0;
+
+function renderPick(){
+  const evId = document.getElementById('event').value;
+  const ev = eventById(evId);
+  const startStr = document.getElementById('fromDate').value;
+  const span = +document.getElementById('span').value || 30;
+  const zodiac = document.getElementById('zodiac').value;
+  const box = document.getElementById('pickResult');
+
+  if(!ev){ box.innerHTML = '<p class="hint">事项下拉是空的，去「规则书」里检查一下。</p>'; return; }
+  if(!startStr){ box.innerHTML = '<p class="hint">先选一个开始日期。</p>'; return; }
+  showEvNote();
+  const [y,m,d] = startStr.split('-').map(Number);
+
+  const rows = [];
+  for(let off=0; off<span; off++){
+    rows.push(evalDay(solarOf(y,m,d).next(off), ev, zodiac));
+  }
+  rows.sort((a,b)=>((a.ban?1:0)-(b.ban?1:0)) || (b.score-a.score));
+
+  LAST_ROWS = rows; LAST_EV = ev; LAST_SPAN = span;
+
+  const usable = rows.filter(r=>!r.ban);
+  const top = usable.slice(0,3);
+  const rest = rows.slice(0, 33);
+  const banCount = rows.length - usable.length;
+
+  const card = (r,idx)=>{
+    const s = r.solar;
+    return '<div class="bestCard'+(r.ban?' ban':'')+'">'
+      + '<div class="rank">NO.'+(idx+1)+'</div>'
+      + '<div class="date">'+pad(s.getMonth())+'/'+pad(s.getDay())+'</div>'
+      + '<div class="week">'+s.getYear()+'年 星期'+s.getWeekInChinese()+'</div>'
+      + '<div class="lunarDay">'+r.lunar.getMonthInChinese()+'月'+r.lunar.getDayInChinese()+'</div>'
+      + '<div class="gz">'+r.lunar.getDayInGanZhi()+'日 · '+r.zx+'日</div>'
+      + '<div class="score"><b>'+r.score+'</b><span>分</span></div>'
+      + '<div class="why">'+(r.reasons.length ? esc(r.reasons.slice(0,4).join('；')) : '当天没有特别的宜忌，主要看建除与值神')+'</div>'
+      + '<button class="mini" data-top="'+idx+'" style="margin-top:9px">看依据</button>'
+      + '</div>';
+  };
+
+  const rowHtml = r=>{
+    const s = r.solar;
+    const cls = r.ban ? 'ban' : (r.score>=75?'good':(r.score>=60?'mid':'bad'));
+    return '<div class="dayWrap">'
+      + '<div class="listDay">'
+      +   '<div class="d">'+pad(s.getMonth())+'/'+pad(s.getDay())+'<small>'+s.getYear()+' 星期'+s.getWeekInChinese()+'</small></div>'
+      +   '<div class="mid"><em>'+r.lunar.getDayInGanZhi()+' · '+r.zx+'日'+(r.chongZ===zodiac?' · 冲你生肖':'')+'</em>宜 '+ (r.yi.slice(0,5).join(' ')||'—') +'</div>'
+      +   '<div class="tagz"><span class="pill '+cls+'">'+(r.ban?'<span class="n">禁</span>':'<span class="n">'+r.score+'</span>')+'</span></div>'
+      +   '<div class="tagz"><button class="mini no-print" data-row="1">依据</button></div>'
+      + '</div>'
+      + '<div class="evi" style="display:none">'+detailHtml(r)+'</div>'
+      + '</div>';
+  };
+
+  box.innerHTML = '<div class="hint" style="margin-bottom:14px">'
+    + '「'+esc(ev.k || ev.name)+'」从 '+startStr+' 起 '+span+' 天，按分数排。'
+    + (banCount? '其中 <strong>'+banCount+'</strong> 天被你录入的规则一票否决，排在最后。' : '')
+    + '</div>'
+    + (top.length
+        ? '<div class="best">'+top.map(card).join('')+'</div><div id="topDetail"></div>'
+        : '<p class="hint">这段时间里没有可用日子，可能规则筛得太紧了。</p>')
+    + '<h2 style="margin-top:6px;font-size:16px">逐日排序</h2>'
+    + '<p class="hint sm" style="margin-bottom:10px">分数只代表"这一天适不适合办这件事"，不代表吉凶。点「依据」能看到每一分的来处。</p>'
+    + rest.map(rowHtml).join('')
+    + (rows.filter(r=>r.ban).length
+        ? '<h2 style="margin-top:26px;font-size:16px">被你录入的规则否掉的日子</h2>'
+          + '<p class="hint sm" style="margin-bottom:10px">这些天触发了你设的「一票否决」，所以不进推荐。如果判断不对，去「规则书」把那条规则停用或删掉。</p>'
+          + rows.filter(r=>r.ban).map(rowHtml).join('')
+        : '');
+
+  bindPick();
+
+  document.getElementById('pickTools').style.display = '';
+  document.getElementById('pickSummary').textContent = '共 ' + rows.length + ' 天，可用 ' + usable.length + ' 天';
+}
+
+function detailHtml(r, ev){
+  ev = ev || LAST_EV;
+  const lines = r.hits.length
+    ? r.hits.map(h=>'<div class="ln"><span>'+h.t+(h.src?'<span class="src">'+h.src+'</span>':'')+'</span>'
+        + '<span class="d '+(h.ok?'pos':'neg')+'">'+h.d+'</span></div>').join('')
+    : '<div class="ln"><span>当天没有命中任何加减分条目</span><span class="d">0</span></div>';
+
+  let l = r.lunar;
+  return '<div class="hd">这一天的每一条分数</div>' + lines
+    + '<div class="cols">'
+    +   '<div class="box">黄历宜：'+(r.yi.join(' ')||'—')+'<br>黄历忌：'+(r.ji.join(' ')||'—')+'</div>'
+    +   '<div class="box">建除：'+r.zx+'日（'+ZHIXING_MEAN[r.zx]+'）<br>值神：'+r.tsName+'（'+r.tsLuck+'） · 值宿：'+r.xiu+'（'+r.xiuLuck+'）<br>冲'+r.chongZ+' · 煞'+l.getDaySha()+'<br>彭祖百忌：'+l.getPengZuGan()+'；'+l.getPengZuZhi()+'</div>'
+    + '</div>'
+    + '<div class="hd" style="margin-top:12px">这一天的十二个时辰</div>'
+    + '<p class="hint sm" style="margin-bottom:6px">'
+    +   (ev ? '红线标出的是当天宜办「'+esc(ev.k||ev.name)+'」的时辰。' : '青龙、明堂、金匮、天德、玉堂、司命为吉时，其余为凶时。')
+    + '</p>'
+    + hourTable(r.solar, ev)
+    + '<div class="hd" style="margin-top:12px">方位</div>'
+    + '<p class="hint sm" style="margin:0 0 4px">传统上办事、出行朝这些方位比较讲得通；胎神所在当日不宜动土。</p>'
+    + posRow(l);
+}
+
+function bindPick(){
+  document.querySelectorAll('#pickResult [data-row]').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const box = btn.closest('.dayWrap').querySelector('.evi');
+      box.style.display = (box.style.display==='none') ? 'block' : 'none';
+    });
+  });
+  document.querySelectorAll('#pickResult [data-top]').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const i = +btn.dataset.top;
+      const usable = LAST_ROWS.filter(r=>!r.ban);
+      const r = usable[i];
+      const target = document.getElementById('topDetail');
+      if(!r) return;
+      if(btn.classList.contains('on')){
+        btn.classList.remove('on'); target.innerHTML = ''; return;
+      }
+      document.querySelectorAll('#pickResult [data-top]').forEach(b=>b.classList.remove('on'));
+      btn.classList.add('on');
+      target.innerHTML = '<div class="evi" style="margin-bottom:22px">'+detailHtml(r)
+        + '<div class="hd" style="margin-top:10px">'+r.solar.toYmd()+'</div></div>';
+    });
+  });
+}
+
+function pickToCsv(){
+  if(!LAST_ROWS.length) return;
+  const ev = LAST_EV || {};
+  const head = ['日期','星期','农历','日干支','建除','值神','值宿','冲','分数','状态','主要依据'];
+  const lines = [head.join(',')];
+  LAST_ROWS.forEach(r=>{
+    const s = r.solar, l = r.lunar;
+    const row = [
+      s.toYmd(),
+      '星期'+s.getWeekInChinese(),
+      l.getMonthInChinese()+'月'+l.getDayInChinese(),
+      l.getDayInGanZhi(),
+      r.zx,
+      r.tsName+'('+r.tsLuck+')',
+      r.xiu+'('+r.xiuLuck+')',
+      '冲'+r.chongZ,
+      r.score,
+      r.ban?'规则否决':(r.score>=75?'宜':'谨慎'),
+      (r.reasons.join('；')||'').replace(/,/g,'，')
+    ];
+    lines.push(row.join(','));
+  });
+  downloadText('择日-'+(ev.k||ev.name||'结果')+'-'+new Date().toISOString().slice(0,10)+'.csv',
+    '\ufeff'+lines.join('\r\n'), 'text/csv');
+}
+
+/* ================= 八字 ================= */
+function renderChart(){
+  const bd = document.getElementById('birthDate').value;
+  const bt = document.getElementById('birthTime').value || '12:00';
+  const gender = +document.getElementById('gender').value;
+  const cityIdx = +document.getElementById('city').value;
+  const box = document.getElementById('chartResult');
+
+  if(!bd){ box.innerHTML='<p class="hint">先填出生日期。</p>'; return; }
+  const [y,m,d] = bd.split('-').map(Number);
+  const [hh,mi] = bt.split(':').map(Number);
+  const [cityName,lng] = CITIES[cityIdx]||CITIES[0];
+
+  const ts = toTrueSolar(y,m,d,hh,mi,lng);
+  const real = solarOf(ts.y,ts.m,ts.d,ts.h,ts.mi);
+  const lunar = real.getLunar();
+  const ec = lunar.getEightChar();
+
+  const P = [
+    {name:'年柱', gz:ec.getYear(), gan:ec.getYearGan(), zhi:ec.getYearZhi(),
+     ssGan:ec.getYearShiShenGan(), ssZhi:ec.getYearShiShenZhi(), hide:ec.getYearHideGan(),
+     nayin:ec.getYearNaYin(), dishi:ec.getYearDiShi(), kong:ec.getYearXunKong()},
+    {name:'月柱', gz:ec.getMonth(), gan:ec.getMonthGan(), zhi:ec.getMonthZhi(),
+     ssGan:ec.getMonthShiShenGan(), ssZhi:ec.getMonthShiShenZhi(), hide:ec.getMonthHideGan(),
+     nayin:ec.getMonthNaYin(), dishi:ec.getMonthDiShi(), kong:ec.getMonthXunKong()},
+    {name:'日柱', gz:ec.getDay(), gan:ec.getDayGan(), zhi:ec.getDayZhi(),
+     ssGan:ec.getDayShiShenGan(), ssZhi:ec.getDayShiShenZhi(), hide:ec.getDayHideGan(),
+     nayin:ec.getDayNaYin(), dishi:ec.getDayDiShi(), kong:ec.getDayXunKong()},
+    {name:'时柱', gz:ec.getTime(), gan:ec.getTimeGan(), zhi:ec.getTimeZhi(),
+     ssGan:ec.getTimeShiShenGan(), ssZhi:ec.getTimeShiShenZhi(), hide:ec.getTimeHideGan(),
+     nayin:ec.getTimeNaYin(), dishi:ec.getTimeDiShi(), kong:ec.getTimeXunKong()}
+  ];
+
+  const dayGan = ec.getDayGan();
+  const dayWx = GAN_WX[dayGan];
+
+  const cnt = {木:0,火:0,土:0,金:0,水:0};
+  [P[0].gan,P[0].zhi,P[1].gan,P[1].zhi,P[2].gan,P[2].zhi,P[3].gan,P[3].zhi].forEach(g=>{
+    const w = GAN_WX[g]||ZHI_WX[g]; if(w) cnt[w]++;
+  });
+
+  const ssCnt = {};
+  [P[1].ssGan,P[3].ssGan].forEach(s=>{ if(s&&s!=='日主') ssCnt[s]=(ssCnt[s]||0)+1; });
+  [P[0].ssZhi,P[1].ssZhi,P[2].ssZhi,P[3].ssZhi].forEach(arr=>{
+    (arr||[]).forEach(s=>{ if(s&&s!=='日主') ssCnt[s]=(ssCnt[s]||0)+1; });
+  });
+
+  const yun = ec.getYun(gender);
+  const dyAll = yun.getDaYun(10).filter(x=>x.getGanZhi());
+  const startY = y+yun.getStartYear();
+  const curAge = ageNow(y,m,d);
+  const cur = dyAll.find(x=>curAge>=x.getStartAge() && curAge<=x.getEndAge());
+
+  const head = '<div class="hint" style="margin-bottom:12px">'
+    + '按真太阳时排盘：'+cityName+'（东经 '+lng.toFixed(2)+'°），'
+    + '把 '+pad(hh)+':'+pad(mi)+' 校正为 '+pad(ts.h)+':'+pad(ts.mi)
+    + '（'+(ts.offsetMin>=0?'+':'')+ts.offsetMin.toFixed(0)+' 分钟）。'
+    + (ts.d!==d||ts.m!==m ? ' <strong>注意：校正后跨日了。</strong>' : '')
+    + '</div>';
+
+  const tbl = '<div class="chart"><table>'
+    + '<colgroup><col><col><col><col></colgroup>'
+    + '<thead><tr>' + P.map(p=>'<th>'+p.name+'</th>').join('') + '</tr></thead><tbody>'
+    + '<tr><td colspan="4" style="text-align:left;padding:10px 12px" class="hint">'
+      + '公历 '+y+'-'+pad(m)+'-'+pad(d)+' · 农历 '+lunar.getYearInGanZhi()+'年（'+lunar.getYearShengXiao()+'）'
+      + lunar.getMonthInChinese()+'月'+lunar.getDayInChinese()+'</td></tr>'
+    + '<tr class="gzRow">'+P.map(p=>'<td><div class="glyph">'+p.gz+'</div></td>').join('')+'</tr>'
+    + '<tr><td colspan="4" class="rowLabel" style="text-align:left">十神（天干）</td></tr>'
+    + '<tr>'+P.map(p=>'<td class="sub">'+(p.ssGan||'—')+'</td>').join('')+'</tr>'
+    + '<tr><td colspan="4" class="rowLabel" style="text-align:left">藏干</td></tr>'
+    + '<tr>'+P.map(p=>'<td class="sub">'+((p.hide||[]).join(' ')||'—')+'</td>').join('')+'</tr>'
+    + '<tr><td colspan="4" class="rowLabel" style="text-align:left">地支十神</td></tr>'
+    + '<tr>'+P.map(p=>'<td class="sub">'+((p.ssZhi||[]).join(' ')||'—')+'</td>').join('')+'</tr>'
+    + '<tr><td colspan="4" class="rowLabel" style="text-align:left">纳音</td></tr>'
+    + '<tr>'+P.map(p=>'<td class="sub">'+p.nayin+'</td>').join('')+'</tr>'
+    + '<tr><td colspan="4" class="rowLabel" style="text-align:left">地势</td></tr>'
+    + '<tr>'+P.map(p=>'<td class="sub">'+p.dishi+'</td>').join('')+'</tr>'
+    + '<tr><td colspan="4" class="rowLabel" style="text-align:left">空亡</td></tr>'
+    + '<tr>'+P.map(p=>'<td class="sub">'+p.kong+'</td>').join('')+'</tr>'
+    + '</tbody></table></div>';
+
+  const wxBars = WX_ORDER.map(k=>{
+    const c = cnt[k];
+    return '<div class="wxItem '+WX_CLASS[k]+'">'
+      + '<div class="k">'+k+'</div>'
+      + '<div class="v">'+c+'</div>'
+      + '<div class="bar"><i style="width:'+(c/8*100)+'%"></i></div>'
+      + '</div>';
+  }).join('');
+
+  const maxCnt = Math.max.apply(null, WX_ORDER.map(k=>cnt[k]));
+  const maxList = WX_ORDER.filter(k=>cnt[k]===maxCnt);
+  const zeroWx = WX_ORDER.filter(k=>cnt[k]===0);
+  const topSs = Object.keys(ssCnt).sort((a,b)=>ssCnt[b]-ssCnt[a]).slice(0,3);
+
+  const reading = '<div class="reading">'
+    + '<p class="lead2">① 你的日主是「'+dayGan+dayWx+'」</p>'
+    + '<p>日柱的天干（'+dayGan+'）代表"你"这个主体，叫日主。传统上把'+dayGan+'比作「'+GAN_IMAGE[dayGan]+'」——这只是这个符号的意象，不是性格定论。</p>'
+    + '<p class="lead2">② 月令在「'+P[1].zhi+'」</p>'
+    + '<p>月柱的地支是'+P[1].zhi+'（'+ZHI_WX[P[1].zhi]+'），传统上把它看作你出生那个月最主要的一股"气候"。判断一个盘的强弱，通常从这里入手，而不是先数五行个数。</p>'
+    + '<p class="lead2">③ 八个字的五行分布</p>'
+    + '<p>木 '+cnt['木']+' · 火 '+cnt['火']+' · 土 '+cnt['土']+' · 金 '+cnt['金']+' · 水 '+cnt['水']+'。'
+    + (maxList.length===1
+        ? '其中「'+maxList[0]+'」出现最多（'+maxCnt+' 个）。'
+        : '其中「'+maxList.join('、')+'」并列最多（各 '+maxCnt+' 个）。')
+    + (zeroWx.length? '「'+zeroWx.join('、')+'」一个都没有出现，传统会把这种情况叫"缺'+zeroWx.join('缺')+'"。' : '五个五行都出现了。')
+    + ' 注意：这里只数了八个字的本气，没算藏干，也不等于"缺什么就要补什么"——那是一个流传很广但很粗糙的说法。</p>'
+    + '<p class="lead2">④ 出现最多的十神</p>'
+    + '<p>'+(topSs.length? topSs.map(s=>'「'+s+'」'+ssCnt[s]+' 次（'+SHISHEN_NOTE[s]+'）').join('；') : '十神分布比较平均。')+'</p>'
+    + '</div>';
+
+  const yunInfo = '<p class="hint" style="margin:14px 0 10px">'
+    + '出生后 '+yun.getStartYear()+' 年 '+yun.getStartMonth()+' 个月起运（约 '+startY+' 年），之后每十年换一步大运。'
+    + (cur? ' 你现在 '+curAge+' 岁，走的是「'+cur.getGanZhi()+'」运（'+cur.getStartAge()+'–'+cur.getEndAge()+' 岁）。' : '')
+    + '</p>';
+
+  const dyRow = dyAll.map(x=>{
+    const isNow = cur && x.getIndex()===cur.getIndex();
+    return '<div class="dy'+(isNow?' now':'')+'">'
+      + '<div class="age">'+x.getStartAge()+'–'+x.getEndAge()+' 岁</div>'
+      + '<div class="gz">'+x.getGanZhi()+'</div>'
+      + '<div class="yr">'+x.getStartYear()+'</div>'
+      + (isNow?'<div class="mark">当前</div>':'')
+      + '</div>';
+  }).join('');
+
+  box.innerHTML = head + tbl
+    + '<div style="margin-top:18px"><h2 style="font-size:15px;margin-bottom:8px">五行分布（本气）</h2><div class="wx">'+wxBars+'</div></div>'
+    + '<div style="margin-top:22px">'+reading+'</div>'
+    + '<div style="margin-top:22px"><h2 style="font-size:15px;margin-bottom:6px">大运</h2>'+yunInfo+'<div class="dayun">'+dyRow+'</div></div>'
+    + '<div style="margin-top:22px"><h2 style="font-size:15px;margin-bottom:6px">近十年流年</h2>'
+    +   '<p class="hint sm" style="margin:0 0 2px">流年干支下面那两个字，是这个年份的干支克到「'+dayGan+'」日主时对应的十神，和四柱表里的算法一样。</p>'
+    +   liuNianHtml(dayGan, new Date().getFullYear(), 10)
+    + '</div>'
+    + '<p class="hint sm" style="margin-top:18px">以上是把命盘里的术语翻成白话，帮你认识这张盘的结构，不构成任何对运势的判断。</p>';
+
+  try{
+    localStorage.setItem('mybazi', JSON.stringify({bd,bt,gender,cityIdx}));
+  }catch(e){}
+}
+
+/* ---- 档案 ---- */
+function renderChips(){
+  const bar = document.getElementById('profChips');
+  if(!bar) return;
+  bar.innerHTML = (PROFILES.length
+    ? PROFILES.map(p=>'<span class="chip'+(p.id===CUR_PROF?' on':'')+'" data-prof="'+p.id+'">'
+        + esc(p.name||'未命名') + '<span class="x" data-del="'+p.id+'">×</span></span>').join('')
+    : '<span class="hint sm">还没有存过档案。填好下面的出生信息，点「存为档案」，以后一键切换。</span>');
+
+  bar.querySelectorAll('[data-prof]').forEach(el=>{
+    el.addEventListener('click',e=>{
+      if(e.target.dataset.del) return;
+      loadProfile(el.dataset.prof);
+    });
+  });
+  bar.querySelectorAll('[data-del]').forEach(el=>{
+    el.addEventListener('click',e=>{
+      e.stopPropagation();
+      const id = el.dataset.del;
+      PROFILES = PROFILES.filter(p=>p.id!==id);
+      if(CUR_PROF===id) CUR_PROF='';
+      saveProfiles(); renderChips();
+    });
+  });
+}
+function loadProfile(id){
+  const p = PROFILES.find(x=>x.id===id);
+  if(!p) return;
+  CUR_PROF = id;
+  document.getElementById('birthDate').value = p.bd;
+  document.getElementById('birthTime').value = p.bt;
+  document.getElementById('gender').value = p.gender;
+  document.getElementById('city').value = p.city;
+  renderChips();
+  renderChart();
+}
+function saveCurrentProfile(){
+  const nm = document.getElementById('profName').value.trim();
+  const bd = document.getElementById('birthDate').value;
+  if(!bd){ alert('先填出生日期'); return; }
+  if(!nm){ alert('给档案起个名字，比如“我”'); return; }
+  const data = {
+    bd, bt:document.getElementById('birthTime').value,
+    gender:document.getElementById('gender').value,
+    city:document.getElementById('city').value
+  };
+  if(CUR_PROF){
+    const p = PROFILES.find(x=>x.id===CUR_PROF);
+    if(p){ Object.assign(p, data, {name:nm}); }
+  }else{
+    PROFILES.push(Object.assign({id:uid('p'), name:nm}, data));
+    CUR_PROF = PROFILES[PROFILES.length-1].id;
+  }
+  saveProfiles();
+  document.getElementById('profName').value = '';
+  renderChips();
+}
+
+/* ================= 今天 ================= */
+function todayRuleHits(solar){
+  const lunar = solar.getLunar();
+  const out = [];
+  const seen = {};
+  dayRuleKeys(solar, lunar).forEach(k=>{
+    const arr = IDX.get(k);
+    if(!arr) return;
+    arr.forEach(r=>{
+      if(seen[r.id]) return;
+      seen[r.id]=1;
+      out.push(r);
+    });
+  });
+  return out;
+}
+
+function renderToday(){
+  const box = document.getElementById('todayResult');
+  const now = new Date();
+  const y = now.getFullYear(), m = now.getMonth()+1, d = now.getDate();
+  const solar = solarOf(y,m,d);
+  const lunar = solar.getLunar();
+
+  const yi = lunar.getDayYi();
+  const ji = lunar.getDayJi();
+  const jq = lunar.getJieQi();
+  const nextJq = lunar.getNextJieQi();
+  const prevJq = lunar.getPrevJieQi();
+
+  const words = arr => arr.length
+    ? arr.map(w=>'<span class="word">'+w+'</span>').join('')
+    : '<span class="hint sm">无</span>';
+
+  const myRules = todayRuleHits(solar);
+  const ruleBlock = myRules.length
+    ? '<div class="yiji" style="margin-top:16px"><h4>今天命中你录入的规矩</h4>'
+      + myRules.map(r=>'<div style="font-size:12.5px;color:var(--ink-2);padding:3px 0;border-bottom:1px dotted var(--line)">'
+          + '<span style="font-family:var(--serif)">'+esc(r.title)+'</span>'
+          + (r.ban? ' <span class="pill ban"><span class="n">禁</span></span>' : (r.score? ' <span class="hint sm">'+(r.score>0?'+':'')+r.score+' 分</span>':''))
+          + (r.src? '<span class="src" style="color:var(--faint);font-size:11px;margin-left:8px">'+esc(r.src)+'</span>':'')
+          + (r.note? '<div class="hint sm">'+esc(r.note)+'</div>':'')
+          + '</div>').join('')
+      + '</div>'
+    : '';
+
+  box.innerHTML = ''
+    + '<div class="todayHead">'
+    +   '<div>'
+    +     '<div class="num">'+pad(d)+'</div>'
+    +     '<div class="meta">'+y+' 年 '+pad(m)+' 月 · 星期'+solar.getWeekInChinese()+'<br>'
+    +       '农历 '+lunar.getYearInGanZhi()+'年（'+lunar.getYearShengXiao()+'） '+lunar.getMonthInChinese()+'月'+lunar.getDayInChinese()
+    +     '</div>'
+    +   '</div>'
+    +   '<div class="right">'
+    +     '<div class="k">今日干支</div><div class="v">'+lunar.getDayInGanZhi()+'日 · '+lunar.getZhiXing()+'日 · 值神'+lunar.getDayTianShen()+'（'+lunar.getDayTianShenLuck()+'）</div>'
+    +     '<div class="k" style="margin-top:12px">节气</div><div class="v">'
+    +       (jq? '今天 '+jq : '上一节气 '+prevJq.getName()+'（'+prevJq.getSolar().getMonth()+'/'+prevJq.getSolar().getDay()+'） · 下一节气 '+nextJq.getName()+'（'+nextJq.getSolar().getMonth()+'/'+nextJq.getSolar().getDay()+'）')
+    +     '</div>'
+    +   '</div>'
+    + '</div>'
+    + '<div class="todayBody">'
+    +   '<div class="yiji"><h4 class="y">宜</h4><div class="words">'+words(yi)+'</div></div>'
+    +   '<div class="yiji"><h4 class="j">忌</h4><div class="words">'+words(ji)+'</div></div>'
+    +   '<div class="yiji"><h4>冲煞</h4><p class="hint" style="margin:0">冲'+lunar.getDayChongShengXiao()+'（'+lunar.getDayChongGan()+lunar.getDayChong()+'） · 煞'+lunar.getDaySha()
+    +     '<br>如果今天"冲"的正好是你的生肖，传统上会建议这天少办大事。</p></div>'
+    +   '<div class="yiji"><h4>吉神 / 凶煞</h4><p class="hint" style="margin:0">吉神：'+(lunar.getDayJiShen().join(' ')||'—')
+    +     '<br>凶煞：'+(lunar.getDayXiongSha().join(' ')||'—')
+    +     '<br>值宿：'+lunar.getXiu()+'（'+lunar.getXiuLuck()+'）</p></div>'
+    + '</div>'
+    + ruleBlock
+    + '<div class="yiji" style="margin-top:16px"><h4>十二时辰</h4>'
+    +   '<p class="hint sm" style="margin:0 0 8px">青色为吉时，赭色为凶时。一天里"好日"也要挑个好时辰。</p>'
+    +   '<div class="hourChips">'+hourChips(lunar)+'</div>'
+    +   posRow(lunar)
+    + '</div>'
+    + '<div class="yiji" style="margin-top:16px"><h4>彭祖百忌</h4><p class="hint" style="margin:0">'
+    +   lunar.getPengZuGan()+'<br>'+lunar.getPengZuZhi()+'</p></div>'
+    + '<div class="lex">'
+    +   '<h3>今天这几个词是什么意思</h3>'
+    +   '<dl>'
+    +     '<dt>干支</dt><dd>用"天干+地支"给每一天编号，六十年一个循环。</dd>'
+    +     '<dt>建除十二值</dt><dd>把日子分成建、除、满、平、定、执、破、危、成、收、开、闭十二类，传统上"破"日最忌办事。</dd>'
+    +     '<dt>值神</dt><dd>当天轮值的"天神"，分黄道吉神与黑道凶神两类，是黄历吉凶判断里最常用的一层。</dd>'
+    +     '<dt>冲煞</dt><dd>"冲"指当天与某个生肖相冲，"煞"指不利的方位。</dd>'
+    +     '<dt>二十八宿</dt><dd>把天空划成二十八个区域，每天轮到一宿值班，通书据此分吉凶。</dd>'
+    +     '<dt>彭祖百忌</dt><dd>按当天干支传下来的一句口诀，提醒这天不宜做什么，属传统提示。</dd>'
+    +   '</dl>'
+    + '</div>';
+}
+
+/* ================= 规则书 ================= */
+function kbMsg(type, html){
+  const box = document.getElementById('kbImportBox');
+  if(!box) return;
+  box.innerHTML = html ? '<div class="impMsg '+(type||'')+'">'+html+'</div>' : '';
+}
+
+function renderKb(){
+  renderStats();
+  renderBuiltin();
+  renderEventsList();
+  renderWeights();
+  renderKbList();
+  renderChips();
+}
+
+function renderStats(){
+  const total = KB.rules.length;
+  const on = KB.rules.filter(r=>r.on!==false).length;
+  let size = 0;
+  try{ size = JSON.stringify({v:2,set:KB.set,events:KB.events,rules:KB.rules}).length; }catch(e){}
+  document.getElementById('kbStats').innerHTML =
+      '<div class="stat"><div class="k">自定义规则</div><div class="v">'+total+' <small>条</small></div></div>'
+    + '<div class="stat"><div class="k">已启用</div><div class="v">'+on+' <small>条</small></div></div>'
+    + '<div class="stat"><div class="k">自定义事项</div><div class="v">'+(KB.events||[]).length+' <small>项</small></div></div>'
+    + '<div class="stat"><div class="k">占用</div><div class="v">'+(size/1024).toFixed(1)+' <small>KB</small></div></div>';
+}
+
+function renderBuiltin(){
+  document.getElementById('kbBuiltin').innerHTML = '<div class="tscroll"><table class="kbTable" style="margin-top:6px">'
+    + '<colgroup><col style="width:20%"><col style="width:56%"><col style="width:24%"></colgroup>'
+    + '<thead><tr><th>项目</th><th>怎么参与判断</th><th>出处</th></tr></thead><tbody>'
+    + BUILTIN_DOC.map(b=>'<tr><td class="t">'+b.t+'</td><td>'+b.d+'</td><td class="src">'+b.src+'</td></tr>').join('')
+    + '</tbody></table></div>';
+}
+
+function renderEventsList(){
+  const box = document.getElementById('evList');
+  if(!(KB.events||[]).length){
+    box.innerHTML = '<p class="hint sm">还没有自定义事项。常见的地方习俗有：上梁、谢土、开光、过礼、开市前试营业、入宅安神等。</p>';
+    return;
+  }
+  box.innerHTML = '<div class="tscroll"><table class="kbTable">'
+    + '<colgroup><col style="width:26%"><col style="width:30%"><col style="width:32%"><col style="width:12%"></colgroup>'
+    + '<thead><tr><th>事项</th><th>黄历词</th><th>说明</th><th style="text-align:right">操作</th></tr></thead><tbody>'
+    + KB.events.map(e=>'<tr>'
+        + '<td class="t">'+esc(e.name)+'</td>'
+        + '<td class="cond">'+esc((e.words||[]).join('、')||'—')+'</td>'
+        + '<td class="src">'+esc(e.note||'')+'</td>'
+        + '<td class="ops"><button class="mini" data-ev-edit="'+e.id+'">改</button> <button class="mini warn" data-ev-del="'+e.id+'">删</button></td>'
+      + '</tr>').join('')
+    + '</tbody></table></div>';
+
+  box.querySelectorAll('[data-ev-edit]').forEach(b=>b.addEventListener('click',()=>openEvEditor(b.dataset.evEdit)));
+  box.querySelectorAll('[data-ev-del]').forEach(b=>b.addEventListener('click',()=>{
+    KB.events = KB.events.filter(x=>x.id!==b.dataset.evDel);
+    saveKB(); initSelects(); renderEventsList(); renderStats();
+  }));
+}
+
+function renderWeights(){
+  const S = KB.set;
+  document.getElementById('wPanel').innerHTML = '<div class="panel"><div class="grid four">'
+    + '<div><label>基础分（每天都有的底分）</label><input type="number" id="wBase" value="'+S.base+'" min="0" max="80"></div>'
+    + '<div><label>命中「宜」每项加</label><input type="number" id="wYi" value="'+S.yi+'" min="0" max="30"></div>'
+    + '<div><label>命中「忌」每项减</label><input type="number" id="wJi" value="'+S.ji+'" min="0" max="40"></div>'
+    + '<div><label>冲你生肖减</label><input type="number" id="wChong" value="'+S.chong+'" min="0" max="40"></div>'
+    + '<div><label>建除十二值</label><select id="wZx"><option value="1"'+(S.useZx?' selected':'')+'>参与打分</option><option value="0"'+(!S.useZx?' selected':'')+'>不参与</option></select></div>'
+    + '<div><label>值日神</label><select id="wTs"><option value="1"'+(S.useTs?' selected':'')+'>参与打分</option><option value="0"'+(!S.useTs?' selected':'')+'>不参与</option></select></div>'
+    + '<div><label>二十八宿</label><select id="wXiu"><option value="1"'+(S.useXiu?' selected':'')+'>参与打分</option><option value="0"'+(!S.useXiu?' selected':'')+'>不参与</option></select></div>'
+    + '</div><div class="acts"><button class="ghost" id="wSave">保存权重</button><button class="mini" id="wReset">恢复默认</button><span class="sp"></span><span class="hint sm" id="wMsg"></span></div></div>';
+
+  document.getElementById('wSave').addEventListener('click',()=>{
+    KB.set = {
+      base: +document.getElementById('wBase').value || 0,
+      yi: +document.getElementById('wYi').value || 0,
+      ji: +document.getElementById('wJi').value || 0,
+      chong: +document.getElementById('wChong').value || 0,
+      useZx: document.getElementById('wZx').value==='1',
+      useTs: document.getElementById('wTs').value==='1',
+      useXiu: document.getElementById('wXiu').value==='1'
+    };
+    saveKB();
+    document.getElementById('wMsg').textContent = '已保存，下次择日生效';
+    renderPick();
+  });
+  document.getElementById('wReset').addEventListener('click',()=>{
+    KB.set = Object.assign({}, DEF_SET);
+    saveKB(); renderWeights(); renderPick();
+  });
+}
+
+function kbFiltered(){
+  const q = KBUI.q.toLowerCase();
+  let list = KB.rules.slice();
+  if(KBUI.cat) list = list.filter(r=>(r.cat||'')===KBUI.cat);
+  if(KBUI.onoff!=='') list = list.filter(r=>(r.on===false?'0':'1')===KBUI.onoff);
+  if(q){
+    list = list.filter(r=>{
+      const scopeTxt = (r.scope||[]).map(id=>{
+        const e = eventById(id); return e? (e.k||e.name) : id;
+      }).join(' ');
+      return ((r.title||'')+' '+(r.src||'')+' '+(r.note||'')+' '+(r.cat||'')+' '+matchText(r)+' '+scopeTxt).toLowerCase().indexOf(q)>=0;
+    });
+  }
+  return list;
+}
+
+function renderKbList(){
+  const list = kbFiltered();
+  const pages = Math.max(1, Math.ceil(list.length/PAGE_SIZE));
+  if(KBUI.page >= pages) KBUI.page = pages-1;
+  const page = list.slice(KBUI.page*PAGE_SIZE, (KBUI.page+1)*PAGE_SIZE);
+
+  document.getElementById('kbCount').textContent = list.length ? ('筛出 '+list.length+' 条') : '没有符合条件的规则';
+
+  if(!KB.rules.length){
+    document.getElementById('kbList').innerHTML = '<p class="hint">还没有自定义规则。你的书里那些"某月某日不宜某某"的条目，点「新增规则」或「导入文件」就能加进来。</p>';
+    document.getElementById('kbPager').innerHTML = '';
+    return;
+  }
+
+  const grp = {};
+  KB.rules.forEach(r=>{
+    const k = r.kind + '|' + matchExpr(r);
+    grp[k] = (grp[k]||0) + 1;
+  });
+
+  const rows = page.map(r=>{
+    const scopeTxt = (!r.scope||!r.scope.length) ? '<span class="hint sm">全部事项</span>'
+      : r.scope.map(id=>{ const e=eventById(id); return esc(e? (e.k||e.name) : id); }).join('、');
+    const scoreTxt = r.ban ? '<span class="pill ban"><span class="n">否决</span></span>'
+      : ((+r.score>0?'+':'')+(r.score||0));
+    const dupN = grp[r.kind+'|'+matchExpr(r)] || 0;
+    const dup = dupN>1 ? '<span class="dupmark">同条件 '+dupN+' 条</span>' : '';
+    return '<tr class="'+(r.on===false?'off':'')+'">'
+      + '<td class="t">'+esc(r.title)+dup+(r.cat?'<div class="src">'+esc(r.cat)+'</div>':'')+'</td>'
+      + '<td class="cond">'+matchText(r)+'</td>'
+      + '<td>'+scopeTxt+'</td>'
+      + '<td>'+scoreTxt+'</td>'
+      + '<td class="src">'+esc(r.src||'')+(r.note?'<div style="color:var(--muted)">'+esc(r.note)+'</div>':'')+'</td>'
+      + '<td><button class="mini'+(r.on===false?'':' on')+'" data-toggle="'+r.id+'">'+(r.on===false?'停':'开')+'</button></td>'
+      + '<td class="ops"><button class="mini" data-edit="'+r.id+'">改</button> <button class="mini warn" data-del="'+r.id+'">删</button></td>'
+      + '</tr>';
+  }).join('');
+
+  document.getElementById('kbList').innerHTML = '<div class="tscroll"><table class="kbTable">'
+    + '<colgroup><col style="width:21%"><col style="width:19%"><col style="width:15%"><col style="width:8%"><col style="width:19%"><col style="width:6%"><col style="width:12%"></colgroup>'
+    + '<thead><tr><th>标题</th><th>条件</th><th>适用</th><th>加减</th><th>出处 / 说明</th><th>启用</th><th style="text-align:right">操作</th></tr></thead>'
+    + '<tbody>'+rows+'</tbody></table></div>';
+
+  const box = document.getElementById('kbList');
+  box.querySelectorAll('[data-toggle]').forEach(b=>b.addEventListener('click',()=>{
+    const r = KB.rules.find(x=>x.id===b.dataset.toggle);
+    if(!r) return;
+    r.on = (r.on===false);
+    saveKB(); renderKbList(); renderStats();
+  }));
+  box.querySelectorAll('[data-edit]').forEach(b=>b.addEventListener('click',()=>{
+    const r = KB.rules.find(x=>x.id===b.dataset.edit);
+    if(r) openRuleEditor(r);
+  }));
+  box.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click',()=>{
+    if(!confirm('确定删掉这条规则？删了就没了，建议先导出备份。')) return;
+    KB.rules = KB.rules.filter(x=>x.id!==b.dataset.del);
+    saveKB(); renderKbList(); renderStats();
+  }));
+
+  document.getElementById('kbPager').innerHTML = pages>1
+    ? '<span class="pg">第 '+(KBUI.page+1)+' / '+pages+' 页</span>'
+      + '<button class="mini" id="pgPrev"'+(KBUI.page===0?' disabled':'')+'>上一页</button>'
+      + '<button class="mini" id="pgNext"'+(KBUI.page>=pages-1?' disabled':'')+'>下一页</button>'
+    : '';
+  const pv = document.getElementById('pgPrev'), nx = document.getElementById('pgNext');
+  if(pv) pv.addEventListener('click',()=>{ KBUI.page--; renderKbList(); });
+  if(nx) nx.addEventListener('click',()=>{ KBUI.page++; renderKbList(); });
+}
+
+/* --- 规则编辑 --- */
+let EDIT_ID = null;
+
+function openRuleEditor(rule){
+  const r = rule || {id:null, title:'', cat:'民俗', kind:'lun', m:[], scope:[], score:0, ban:false, note:'', src:'', on:true};
+  EDIT_ID = r.id;
+  const evOpts = allEvents().map(e=>{
+    const nm = e.k || e.name;
+    const sel = (r.scope||[]).indexOf(e.id)>=0 ? ' selected' : '';
+    return '<option value="'+e.id+'"'+sel+'>'+esc(nm)+'</option>';
+  }).join('');
+
+  document.getElementById('kbEditor').innerHTML = '<div class="panel">'
+    + '<h3 style="margin-bottom:12px">'+(r.id?'修改规则':'新增规则')+'</h3>'
+    + '<div class="grid">'
+    +   '<div><label>标题（这一条讲什么）</label><input id="fTitle" value="'+esc(r.title)+'" placeholder="例：三娘煞日不宜嫁娶"></div>'
+    +   '<div><label>类别</label><select id="fCat">'
+    +     ['民俗','禁忌','宜日','门派对法','其他'].map(c=>'<option value="'+c+'"'+(r.cat===c?' selected':'')+'>'+c+'</option>').join('')
+    +   '</select></div>'
+    +   '<div><label>规则类型</label><select id="fKind">'
+    +     KINDS.map(k=>'<option value="'+k.k+'"'+(r.kind===k.k?' selected':'')+'>'+k.label+'</option>').join('')
+    +   '</select></div>'
+    +   '<div class="full"><label>条件（多个用 | 隔开）</label><input id="fMatch" value="'+esc(matchExpr(r))+'">'
+    +     '<div class="hint sm" id="fHint" style="margin-top:4px"></div></div>'
+    +   '<div class="full"><label>适用事项（不选＝所有事项都用这条）</label>'
+    +     '<select id="fScope" multiple size="5" style="height:auto">'+evOpts+'</select></div>'
+    +   '<div><label>加减分（正数加分，负数减分）</label><input type="number" id="fScore" value="'+(r.score||0)+'" max="60" min="-60"></div>'
+    +   '<div><label>一票否决</label><select id="fBan"><option value="0"'+(!r.ban?' selected':'')+'>否（按分数加减）</option><option value="1"'+(r.ban?' selected':'')+'>是（这天直接从推荐里剔掉）</option></select></div>'
+    +   '<div><label>启用</label><select id="fOn"><option value="1"'+(r.on!==false?' selected':'')+'>启用</option><option value="0"'+(r.on===false?' selected':'')+'>停用</option></select></div>'
+    +   '<div class="full"><label>出处（书名 / 页码 / 谁说的）</label><input id="fSrc" value="'+esc(r.src||'')+'" placeholder="例：《玉匣记》p.32 / 奶奶口传 / 本地通书"></div>'
+    +   '<div class="full"><label>说明（给自己看的备注）</label><textarea id="fNote" placeholder="这条规矩怎么用、有什么例外">'+esc(r.note||'')+'</textarea></div>'
+    + '</div>'
+    + '<div class="acts"><button class="ghost" id="fSave">保存</button><button class="mini" id="fCancel">取消</button>'
+    +   '<span class="sp"></span><span class="hint sm" id="fErr" style="color:var(--red)"></span></div>'
+    + '</div>';
+
+  const kindSel = document.getElementById('fKind');
+  const hint = document.getElementById('fHint');
+  const setHint = ()=>{ hint.textContent = '写法：' + (KIND_MAP[kindSel.value]||{}).hint; };
+  setHint();
+  kindSel.addEventListener('change', setHint);
+
+  document.getElementById('fSave').addEventListener('click', saveRule);
+  document.getElementById('fCancel').addEventListener('click', ()=>{ EDIT_ID=null; document.getElementById('kbEditor').innerHTML=''; });
+  document.getElementById('kbEditor').scrollIntoView({behavior:'smooth',block:'center'});
+}
+
+function matchExpr(r){
+  return (r.m||[]).map(m=>{
+    if(r.kind==='lun'||r.kind==='sol') return m.m+'-'+m.d;
+    if(r.kind==='gz') return m.gz || m.gan || m.zhi;
+    if(r.kind==='jq') return m.v + (m.off? ('-'+m.off) : '');
+    if(r.kind==='wk') return String(m.v);
+    return m.v;
+  }).join('|');
+}
+
+function saveRule(){
+  const err = document.getElementById('fErr');
+  const title = document.getElementById('fTitle').value.trim();
+  const kind = document.getElementById('fKind').value;
+  const raw = document.getElementById('fMatch').value.trim();
+  const score = +document.getElementById('fScore').value || 0;
+  const ban = document.getElementById('fBan').value==='1';
+  const cat = document.getElementById('fCat').value;
+  const note = document.getElementById('fNote').value.trim();
+  const src = document.getElementById('fSrc').value.trim();
+  const on = document.getElementById('fOn').value==='1';
+  const scope = Array.from(document.getElementById('fScope').selectedOptions).map(o=>o.value);
+
+  if(!title){ err.textContent = '标题不能空'; return; }
+  const pm = parseMatch(kind, raw);
+  if(!pm.ok){ err.textContent = pm.err; return; }
+  if(!ban && score===0 && !note){
+    err.textContent = '加减分为 0 又没有说明，这条规则不会产生任何作用';
+    return;
+  }
+
+  const rule = {id:EDIT_ID||uid('r'), on, kind, m:pm.m, cat, title, scope, score, ban, note, src};
+  if(EDIT_ID){
+    const i = KB.rules.findIndex(x=>x.id===EDIT_ID);
+    if(i>=0) KB.rules[i] = rule; else KB.rules.push(rule);
+  }else{
+    KB.rules.push(rule);
+  }
+  EDIT_ID = null;
+  saveKB();
+  document.getElementById('kbEditor').innerHTML = '';
+  renderKbList(); renderStats();
+  kbMsg('ok', '规则已保存：'+esc(title)+'。去「择日」选对应事项，就能看到它生效。');
+}
+
+/* --- 事项编辑 --- */
+let EV_ID = null;
+function openEvEditor(id){
+  const e = (KB.events||[]).find(x=>x.id===id) || {id:null, name:'', words:[], note:''};
+  EV_ID = e.id;
+  document.getElementById('evEditor').innerHTML = '<div class="panel">'
+    + '<h3 style="margin-bottom:12px">'+(e.id?'修改事项':'新增事项')+'</h3>'
+    + '<div class="grid">'
+    +   '<div><label>事项名（你自己看得懂的说法）</label><input id="evName" value="'+esc(e.name||'')+'" placeholder="例：上梁 / 谢土 / 开光"></div>'
+    +   '<div><label>黄历里对应的词（多个用、隔开）</label><input id="evWords" value="'+esc((e.words||[]).join('、'))+'" placeholder="例：修造、动土"></div>'
+    +   '<div><label>说明</label><input id="evNote" value="'+esc(e.note||'')+'"></div>'
+    + '</div>'
+    + '<div class="acts"><button class="ghost" id="evSave">保存</button><button class="mini" id="evCancel">取消</button>'
+    +   '<span class="sp"></span><span class="hint sm" id="evErr" style="color:var(--red)"></span></div></div>';
+
+  document.getElementById('evSave').addEventListener('click',()=>{
+    const name = document.getElementById('evName').value.trim();
+    const words = document.getElementById('evWords').value.split(/[、,，\s]+/).filter(Boolean);
+    const note = document.getElementById('evNote').value.trim();
+    const err = document.getElementById('evErr');
+    if(!name){ err.textContent='事项名不能空'; return; }
+    if(!words.length){ err.textContent='至少填一个黄历词，否则没法匹配'; return; }
+    if(EV_ID){
+      const e2 = KB.events.find(x=>x.id===EV_ID);
+      if(e2){ e2.name=name; e2.words=words; e2.note=note; }
+    }else{
+      KB.events.push({id:uid('c'), name, words, note});
+    }
+    EV_ID = null;
+    saveKB(); initSelects(); renderEventsList(); renderStats();
+    document.getElementById('evEditor').innerHTML='';
+  });
+  document.getElementById('evCancel').addEventListener('click',()=>{
+    EV_ID=null; document.getElementById('evEditor').innerHTML='';
+  });
+}
+
+/* --- 导入导出 --- */
+const CSV_HEAD = ['kind','title','match','scope','score','ban','note','source','on'];
+const CSV_HEAD_CN = {'类型':'kind','标题':'title','条件':'match','事项':'scope','加减分':'score','分值':'score','否决':'ban','说明':'note','出处':'source','启用':'on'};
+
+function parseCsv(text){
+  const rows = [];
+  let cur = '', row = [], q = false;
+  for(let i=0;i<text.length;i++){
+    const c = text.charAt(i);
+    if(q){
+      if(c==='"'){
+        if(text.charAt(i+1)==='"'){ cur+='"'; i++; } else q = false;
+      }else cur += c;
+    }
+    else if(c==='"') q = true;
+    else if(c===','){ row.push(cur); cur=''; }
+    else if(c==='\n'){ row.push(cur); cur=''; if(row.join('').trim()) rows.push(row); row=[]; }
+    else if(c==='\r'){ }
+    else cur += c;
+  }
+  if(cur!=='' || row.length){ row.push(cur); if(row.join('').trim()) rows.push(row); }
+  return rows;
+}
+
+function buildRule(o, where, errors){
+  const kind = String(o.kind||'').trim();
+  if(!KIND_MAP[kind]){ errors.push(where+'：类型「'+kind+'」不认识，只能是 '+KINDS.map(k=>k.k).join('/')); return null; }
+  const title = String(o.title||'').trim();
+  if(!title){ errors.push(where+'：标题是空的'); return null; }
+  let m = null;
+  if(Array.isArray(o.m) && o.m.length){ m = o.m; }
+  else{
+    const pm = parseMatch(kind, o.match);
+    if(!pm.ok){ errors.push(where+'：'+pm.err); return null; }
+    m = pm.m;
+  }
+  let scope = o.scope;
+  if(typeof scope === 'string') scope = scope.split(/[|、;；]+/).filter(Boolean);
+  if(!Array.isArray(scope)) scope = [];
+  scope = scope.map(s=>{
+    const e = allEvents().find(x=>(x.k||x.name)===s || x.id===s);
+    return e? e.id : s;
+  });
+  const score = +(o.score||0);
+  const ban = (o.ban===true || o.ban==='1' || o.ban===1 || o.ban==='是');
+  const on = !(o.on===false || o.on==='0' || o.on===0 || o.on==='否');
+  return {id:uid('r'), on, kind, m, cat:String(o.cat||o['类别']||'民俗'), title,
+    scope, score, ban, note:String(o.note||''), src:String(o.src||o.source||'')};
+}
+
+function normImport(text, filename){
+  text = String(text).replace(/^\uFEFF/,'').trim();
+  const errors = [];
+  const out = {rules:[], events:[]};
+  const isJson = /\.json$/i.test(filename||'') || text.charAt(0)==='{' || text.charAt(0)==='[';
+
+  if(isJson){
+    let o;
+    try{ o = JSON.parse(text); }
+    catch(e){ errors.push('JSON 格式有问题：'+e.message); return {rules:[], events:[], errors}; }
+    let rules = [], events = [];
+    if(Array.isArray(o)) rules = o;
+    else if(o && typeof o==='object'){ rules = o.rules||[]; events = o.events||[]; }
+    else { errors.push('文件内容不是规则数组，也不是带 rules 的对象'); return {rules:[], events:[], errors}; }
+
+    rules.forEach((r,i)=>{
+      const built = buildRule(r, '第 '+(i+1)+' 条', errors);
+      if(built) out.rules.push(built);
+    });
+    events.forEach((e,i)=>{
+      const nm = String(e.name||e.k||'').trim();
+      const words = e.words||[];
+      if(!nm || !words.length){ errors.push('第 '+(i+1)+' 个事项缺名字或黄历词'); return; }
+      out.events.push({id:uid('c'), name:nm, words:words, note:String(e.note||'')});
+    });
+    return {rules:out.rules, events:out.events, errors};
+  }
+
+  /* CSV */
+  const rows = parseCsv(text);
+  if(!rows.length){ errors.push('文件是空的'); return {rules:[], events:[], errors}; }
+  const head = rows[0].map(h=>{
+    const t = String(h).trim().toLowerCase();
+    return CSV_HEAD_CN[t] || t;
+  });
+  const col = name => head.indexOf(name);
+  if(col('kind')<0 || col('match')<0){ errors.push('表头里要有 kind 和 match 两列（可以直接下载模板照着填）'); return {rules:[], events:[], errors}; }
+
+  for(let i=1;i<rows.length;i++){
+    const r = rows[i];
+    if(!r.join('').trim()) continue;
+    const obj = {
+      kind:r[col('kind')], title:r[col('title')], match:r[col('match')],
+      scope:col('scope')>=0? r[col('scope')] : '',
+      score:col('score')>=0? r[col('score')] : 0,
+      ban:col('ban')>=0? r[col('ban')] : 0,
+      note:col('note')>=0? r[col('note')] : '',
+      src:col('source')>=0? r[col('source')] : '',
+      on:col('on')>=0? r[col('on')] : 1
+    };
+    const built = buildRule(obj, '第 '+(i+1)+' 行', errors);
+    if(built) out.rules.push(built);
+  }
+  return {rules:out.rules, events:[], errors};
+}
+
+let PENDING = null;
+
+function doImportFile(file){
+  const rd = new FileReader();
+  rd.onload = ()=>{
+    const res = normImport(rd.result, file.name);
+    PENDING = res;
+    const errTxt = res.errors.length
+      ? '<div style="margin-top:8px">有 '+res.errors.length+' 行没通过检查：<br>'+res.errors.slice(0,8).map(e=>'· '+esc(e)).join('<br>')
+        + (res.errors.length>8? '<br>…还有 '+(res.errors.length-8)+' 条' : '') + '</div>'
+      : '';
+    const okTxt = '读到 <strong>'+(res.rules.length)+'</strong> 条规则'
+      + (res.events.length? '、<strong>'+res.events.length+'</strong> 个事项' : '')
+      + '。' + (res.rules.length? '确认后可以追加到现有规则里，不会覆盖你已经录好的。' : '');
+    kbMsg(res.rules.length?'ok':'err', okTxt + errTxt
+      + (res.rules.length? '<div style="margin-top:10px"><button class="ghost" id="impOk">确认导入</button> <button class="mini" id="impCancel">取消</button></div>' : ''));
+    const b1 = document.getElementById('impOk');
+    if(b1) b1.addEventListener('click', applyImport);
+    const b2 = document.getElementById('impCancel');
+    if(b2) b2.addEventListener('click', ()=>{ PENDING=null; kbMsg('',''); });
+  };
+  rd.readAsText(file, 'utf-8');
+}
+
+/* ================= 导入前快照 / 撤销 ================= */
+const SNAP_KEY = 'mybazi.kb.snapshot';
+function takeSnapshot(){
+  try{
+    localStorage.setItem(SNAP_KEY, JSON.stringify({v:2, set:KB.set, events:KB.events, rules:KB.rules, t:Date.now()}));
+  }catch(e){}
+}
+function snapshotInfo(){
+  try{
+    const raw = localStorage.getItem(SNAP_KEY);
+    return raw ? JSON.parse(raw) : null;
+  }catch(e){ return null; }
+}
+function syncRollbackBtn(){
+  const b = document.getElementById('kbRollback');
+  if(!b) return;
+  const s = snapshotInfo();
+  b.disabled = !s;
+  b.textContent = s ? ('撤销上次导入（'+(s.rules||[]).length+' 条）') : '撤销上次导入';
+}
+function rollbackSnapshot(){
+  const s = snapshotInfo();
+  if(!s) return;
+  if(!confirm('把规则书恢复到上一次导入之前的状态？这次导入新加的规则会消失，手动改的不会被影响。')) return;
+  KB.set = s.set || Object.assign({}, DEF_SET);
+  KB.events = s.events || [];
+  KB.rules = s.rules || [];
+  saveKB(); initSelects(); renderKb(); syncRollbackBtn();
+  kbMsg('ok', '已恢复到上一次导入之前的规则书。');
+}
+
+/* ================= 规则自测 ================= */
+function runSelfTest(){
+  const out = document.getElementById('stOut');
+  if(!out) return;
+  const ds = document.getElementById('stDate').value;
+  const ev = eventById(document.getElementById('stEvent').value);
+  const z = document.getElementById('stZodiac').value;
+  if(!ds){ out.innerHTML = '<p class="hint">先选一个日期。</p>'; return; }
+  if(!ev){ out.innerHTML = '<p class="hint">没有可用事项，先去下面加一个自定义事项。</p>'; return; }
+  const p = ds.split('-').map(Number);
+  const r = evalDay(solarOf(p[0],p[1],p[2]), ev, z);
+  out.innerHTML = '<div class="stResult">'
+    + '<div class="top"><span class="big">'+r.score+'</span>'
+    + '<span class="hint sm">分'+(r.ban?' · 已被一条规则一票否决':'')+'</span></div>'
+    + detailHtml(r, ev) + '</div>';
+}
+
+/* ================= 复制结论 ================= */
+function pickText(){
+  const ev = LAST_EV || {};
+  const ok = LAST_ROWS.filter(r=>!r.ban).slice(0,3);
+  let t = '「'+(ev.k || ev.name || '择日')+'」择日结果（'+(LAST_SPAN||0)+' 天内）\n';
+  ok.forEach((r,i)=>{
+    const s = r.solar;
+    t += (i+1)+'. '+s.toYmd()+' 星期'+s.getWeekInChinese()
+      + ' 农历'+r.lunar.getMonthInChinese()+'月'+r.lunar.getDayInChinese()
+      + ' '+r.lunar.getDayInGanZhi()+'日 '+r.zx+'日 '+r.score+'分\n';
+    t += '   '+(r.reasons.length ? r.reasons.slice(0,3).join('；') : '无特别宜忌')+'\n';
+  });
+  const banN = LAST_ROWS.filter(r=>r.ban).length;
+  if(banN) t += '另有 '+banN+' 天被你录的规则否决。\n';
+  return t;
+}
+function copyText(txt, btn){
+  const done = ()=>{
+    if(!btn) return;
+    const old = btn.textContent;
+    btn.textContent = '已复制';
+    setTimeout(()=>{ btn.textContent = old; }, 1400);
+  };
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(txt).then(done, ()=>fallbackCopy(txt, done));
+  }else{
+    fallbackCopy(txt, done);
+  }
+}
+function fallbackCopy(txt, done){
+  try{
+    const ta = document.createElement('textarea');
+    ta.value = txt;
+    ta.style.position = 'fixed'; ta.style.left = '-9999px';
+    document.body.appendChild(ta);
+    ta.focus(); ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    done();
+  }catch(e){}
+}
+
+function applyImport(){
+  if(!PENDING) return;
+  takeSnapshot();
+  const key = r => r.kind+'|'+matchExpr(r)+'|'+r.title;
+  const exist = {};
+  KB.rules.forEach(r=>{ exist[key(r)] = 1; });
+  let added = 0, dup = 0;
+  PENDING.rules.forEach(r=>{
+    if(exist[key(r)]){ dup++; return; }
+    exist[key(r)] = 1;
+    KB.rules.push(r);
+    added++;
+  });
+  PENDING.events.forEach(e=>{ KB.events.push(e); });
+  const evAdded = PENDING.events.length;
+  PENDING = null;
+  saveKB(); initSelects(); renderKb(); syncRollbackBtn();
+  kbMsg('ok', '导入完成：新增 '+added+' 条规则'+(evAdded? '、'+evAdded+' 个事项':'')+(dup? '，跳过 '+dup+' 条重复的':'')+'. 若要反悔，点「撤销上次导入」。');
+}
+
+function rulesToCsv(){
+  const q = v => '"'+String(v==null?'':v).replace(/"/g,'""')+'"';
+  const lines = [CSV_HEAD.join(',')];
+  KB.rules.forEach(r=>{
+    lines.push([
+      r.kind, q(r.title), q(matchExpr(r)), q((r.scope||[]).join('|')),
+      r.ban?0:(r.score||0), r.ban?1:0, q(r.note||''), q(r.src||''), r.on===false?0:1
+    ].join(','));
+  });
+  return lines.join('\r\n');
+}
+
+const CSV_TPL = [
+  'kind,title,match,scope,score,ban,note,source,on',
+  'lun,示例：某书说三月初三不宜嫁娶（请按你的书核对）,3-3,结婚 / 领证,-6,0,书上原文摘一句,某书 p.12,1',
+  'zx,示例：破日不签合同,破,签合同 / 谈合作,-8,0,破日主耗损,某书 p.40,1',
+  'jq,示例：四立前一日不搬家,立春-1|立夏-1|立秋-1|立冬-1,搬家 / 移居,-5,0,四绝日传统不搬家,某书 p.56,1',
+  'gz,示例：甲子日忌动土,甲子,装修 / 动工,-10,0,,某书 p.88,1'
+].join('\r\n');
+
+/* ================= 启动 ================= */
+(function boot(){
+  if(typeof Solar === 'undefined'){
+    document.body.innerHTML = '<div class="wrap" style="padding:60px 0"><h2>计算库没加载出来</h2>'
+      + '<p class="hint">请确认 assets 文件夹里的 lunar.js 和这个 html 放在一起，没有单独移动。</p></div>';
+    return;
+  }
+  loadKB();
+  loadProfiles();
+  initSelects();
+  applyTheme(themeMode());
+  if(window.matchMedia){
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    if(mq.addEventListener) mq.addEventListener('change', ()=>{ if(themeMode()==='auto') applyTheme('auto'); });
+  }
+  document.getElementById('themeBtn').addEventListener('click', cycleTheme);
+
+  try{
+    const saved = JSON.parse(localStorage.getItem('mybazi')||'null');
+    if(saved && saved.bd){
+      document.getElementById('birthDate').value = saved.bd;
+      document.getElementById('birthTime').value = saved.bt;
+      document.getElementById('gender').value = saved.gender;
+      document.getElementById('city').value = saved.cityIdx;
+    }
+  }catch(e){}
+
+  document.getElementById('runPick').addEventListener('click', renderPick);
+  document.getElementById('runChart').addEventListener('click', renderChart);
+  document.getElementById('profSave').addEventListener('click', saveCurrentProfile);
+  document.getElementById('pickExport').addEventListener('click', pickToCsv);
+  document.getElementById('pickCopy').addEventListener('click', e=>{
+    if(!LAST_ROWS.length){ e.target.textContent='先择一次日'; setTimeout(()=>{e.target.textContent='复制结论';},1400); return; }
+    copyText(pickText(), e.target);
+  });
+  document.getElementById('stRun').addEventListener('click', runSelfTest);
+  document.getElementById('kbRollback').addEventListener('click', rollbackSnapshot);
+  document.getElementById('pickPrint').addEventListener('click', ()=>window.print());
+  document.getElementById('evNew').addEventListener('click', ()=>openEvEditor(null));
+
+  document.getElementById('kbNew').addEventListener('click', ()=>openRuleEditor(null));
+  document.getElementById('kbImport').addEventListener('click', ()=>document.getElementById('kbFile').click());
+  document.getElementById('kbFile').addEventListener('change', e=>{
+    const f = e.target.files && e.target.files[0];
+    if(f) doImportFile(f);
+    e.target.value = '';
+  });
+  document.getElementById('kbExportJson').addEventListener('click', ()=>{
+    downloadText('规则书备份-'+new Date().toISOString().slice(0,10)+'.json',
+      JSON.stringify({v:2, set:KB.set, events:KB.events, rules:KB.rules}, null, 2), 'application/json');
+  });
+  document.getElementById('kbExportCsv').addEventListener('click', ()=>{
+    downloadText('规则书-'+new Date().toISOString().slice(0,10)+'.csv', '\ufeff'+rulesToCsv(), 'text/csv');
+  });
+  document.getElementById('kbTpl').addEventListener('click', ()=>{
+    downloadText('规则导入模板.csv', '\ufeff'+CSV_TPL, 'text/csv');
+  });
+  document.getElementById('kbSearch').addEventListener('input', e=>{
+    KBUI.q = e.target.value.trim(); KBUI.page = 0; renderKbList();
+  });
+  document.getElementById('kbFilter').addEventListener('change', e=>{
+    KBUI.cat = e.target.value; KBUI.page = 0; renderKbList();
+  });
+  document.getElementById('kbOnOff').addEventListener('change', e=>{
+    KBUI.onoff = e.target.value; KBUI.page = 0; renderKbList();
+  });
+
+  renderChips();
+  syncRollbackBtn();
+  renderToday();
+  renderPick();
+  renderChart();
+})();
+</script>
+
+</body>
+</html>
