@@ -1,11 +1,13 @@
 # 黄历八字小工具
 
+[![test](https://github.com/Aegink/huangli-bazi/actions/workflows/test.yml/badge.svg)](https://github.com/Aegink/huangli-bazi/actions/workflows/test.yml)
+
 一个给自己用的离线黄历工具：挑日子、排生辰八字、看今天宜忌，并且能把自己那本书里的规矩录进去，让它按你的规矩来选。
 
 在线版：<https://aegink.github.io/huangli-bazi/>（GitHub Pages，公开访问；手机也能开）
 
 - 单页 HTML，无框架、无构建、无接口，双击 `index.html` 就能用
-- 全部计算在本机浏览器完成，不联网、不上传任何数据
+- 全部计算在本机浏览器完成，不上传任何数据；唯一的外部请求是字体样式表，断网时自动回落到系统字体，功能与计算结果不受影响
 - 规则与档案只存在浏览器 localStorage 里，换设备靠导出 / 导入 JSON
 
 ## 四个页面
@@ -22,6 +24,25 @@
 1. 打开 `index.html`（Chrome / Edge）。
 2. `assets/lunar.js` 必须与 `index.html` 同目录，它是历法计算库 lunar-javascript 1.7.8 的本地副本。
 3. 详见 [交接文档](交接文档.md)。
+
+## 开发与测试
+
+```bash
+node tests/run.js      # 或 npm test
+```
+
+不需要安装任何依赖，Node 18+ 即可。测试会把 `index.html` 里的内联脚本抽出来，在带 DOM 桩、冻结时钟（2026-11-18）的沙箱里执行，然后断言四组：
+
+| 组 | 验什么 |
+| --- | --- |
+| A 历法与天文 | 干支 60 日循环、2026 年 24 节气与间隔、2025 闰六月 / 2033 闰十一月、均时差与 NOAA 偏差 ≤1.5 分钟、已知四柱样例 |
+| B 规则引擎 | 条件解析与非法输入拦截、CSV / JSON 导入、重复导入去重、一票否决、节气前一日精确命中、事项隔离、分数上限、导入快照与撤销 |
+| C 界面渲染 | 四视图冒烟（无 `undefined` / `NaN`）、十二时辰表行数、流年干支与十神、主题切换 |
+| D 工程约束 | viewport、无外链脚本、除字体外无外部依赖、打印样式、暗色变量组 |
+
+CI 在每次 push 与 PR 自动跑同一套断言（`.github/workflows/test.yml`）。视觉与排版仍需人工截图验收。
+
+**为什么仍是单文件**：拆成 `src/*.js` 就得引入构建步骤，会破坏"双击即用、断网可用"。所以逻辑不拆，改用测试 + CI + 明确函数边界来提升可接手性——细节见交接文档第十三节。
 
 ## 边界
 

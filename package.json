@@ -1,0 +1,14 @@
+{
+  "name": "huangli-bazi",
+  "version": "3.1.0",
+  "private": true,
+  "description": "离线黄历 / 择日 / 生辰八字工具：单页 HTML，可自建规则书",
+  "scripts": {
+    "test": "node tests/run.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": ["huangli", "almanac", "bazi", "chinese-calendar", "offline"],
+  "license": "MIT"
+}

@@ -913,6 +913,9 @@ function parseOne(kind, s){
     const p = s.split('-');
     const name = (p[0]||'').trim();
     if(JIEQI_LIST.indexOf(name)<0) return {err:'节气名要写全，例如 立春、惊蛰、清明'};
+    if(p.length>2 || (p.length===2 && String(p[1]).trim()==='')) {
+      return {err:'节气后面只能跟一个 -1 到 -3（表示前几天），例如 立春-1'};
+    }
     const off = p.length>1 ? +p[1] : 0;
     if(p.length>1 && (isNaN(off) || off<0 || off>3)) return {err:'节气后面只能跟 -1 到 -3，表示前几天'};
     return {m:{v:name, off:off}};
